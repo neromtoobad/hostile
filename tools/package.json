@@ -1,0 +1,11 @@
+{
+  "name": "hostile-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dry-run": "node live-dry-run.mjs"
+  },
+  "dependencies": {
+    "viem": "^2.58.0"
+  }
+}
