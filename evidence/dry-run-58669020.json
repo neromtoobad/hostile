@@ -1,0 +1,312 @@
+{
+  "network": "base-mainnet (simulated with eth_simulateV1)",
+  "pinnedBlock": 58669020,
+  "pinnedTime": "2026-11-17T14:02:59.000Z",
+  "rpc": "https://mainnet.base.org",
+  "config": {
+    "entryFee": "25",
+    "maxManagers": 4,
+    "rosterSize": 2,
+    "seasonWeeks": 2,
+    "weekLength": 3600,
+    "pickWindow": 60,
+    "treasuryStock": 3
+  },
+  "picks": [
+    {
+      "pick": 1,
+      "team": "Ape Capital",
+      "stock": "NVDA",
+      "usdcIn": "12.25",
+      "shares": "0.07751095",
+      "pricePerShare": "158.04"
+    },
+    {
+      "pick": 2,
+      "team": "Theta Gang",
+      "stock": "TSLA",
+      "usdcIn": "12.25",
+      "shares": "0.03208448",
+      "pricePerShare": "381.80"
+    },
+    {
+      "pick": 3,
+      "team": "Bagholders FC",
+      "stock": "AMZN",
+      "usdcIn": "12.25",
+      "shares": "0.04730111",
+      "pricePerShare": "258.98"
+    },
+    {
+      "pick": 4,
+      "team": "Diamond Hands",
+      "stock": "HOOD",
+      "usdcIn": "12.25",
+      "shares": "0.15703871",
+      "pricePerShare": "78.01"
+    },
+    {
+      "pick": 5,
+      "team": "Diamond Hands",
+      "stock": "PLTR",
+      "usdcIn": "12.25",
+      "shares": "0.07642051",
+      "pricePerShare": "160.30"
+    },
+    {
+      "pick": 6,
+      "team": "Bagholders FC",
+      "stock": "AAPL",
+      "usdcIn": "12.25",
+      "shares": "0.03482473",
+      "pricePerShare": "351.76"
+    },
+    {
+      "pick": 7,
+      "team": "Theta Gang",
+      "stock": "META",
+      "usdcIn": "12.25",
+      "shares": "0.01971343",
+      "pricePerShare": "621.40"
+    },
+    {
+      "pick": 8,
+      "team": "Ape Capital",
+      "stock": "MSTR",
+      "usdcIn": "12.25",
+      "shares": "0.11832616",
+      "pricePerShare": "103.53"
+    }
+  ],
+  "treasury": {
+    "stock": "NVDA",
+    "usdcIn": "2",
+    "shares": "0.01265484"
+  },
+  "weeks": [
+    {
+      "week": 1,
+      "home": "Ape Capital",
+      "away": "Theta Gang",
+      "homeScoreTicks": 62,
+      "awayScoreTicks": 24,
+      "winner": "Ape Capital"
+    },
+    {
+      "week": 1,
+      "home": "Diamond Hands",
+      "away": "Bagholders FC",
+      "homeScoreTicks": 13,
+      "awayScoreTicks": 0,
+      "winner": "Diamond Hands"
+    },
+    {
+      "week": 2,
+      "home": "Ape Capital",
+      "away": "Diamond Hands",
+      "homeScoreTicks": 0,
+      "awayScoreTicks": 0,
+      "winner": "tie"
+    },
+    {
+      "week": 2,
+      "home": "Bagholders FC",
+      "away": "Theta Gang",
+      "homeScoreTicks": 0,
+      "awayScoreTicks": 0,
+      "winner": "tie"
+    }
+  ],
+  "slices": [
+    {
+      "week": 1,
+      "stock": "TSLA",
+      "from": "Theta Gang",
+      "toWallet": "0x7e57000000000000000000000000000000000A11",
+      "toTeam": "Ape Capital",
+      "shares": "0.00320844",
+      "delivered": true
+    },
+    {
+      "week": 1,
+      "stock": "META",
+      "from": "Theta Gang",
+      "toWallet": "0x7e57000000000000000000000000000000000A11",
+      "toTeam": "Ape Capital",
+      "shares": "0.00197134",
+      "delivered": true
+    },
+    {
+      "week": 1,
+      "stock": "AMZN",
+      "from": "Bagholders FC",
+      "toWallet": "0x7e57000000000000000000000000000000000B0b",
+      "toTeam": "Diamond Hands",
+      "shares": "0.00473011",
+      "delivered": true
+    },
+    {
+      "week": 1,
+      "stock": "AAPL",
+      "from": "Bagholders FC",
+      "toWallet": "0x7e57000000000000000000000000000000000B0b",
+      "toTeam": "Diamond Hands",
+      "shares": "0.00348247",
+      "delivered": true
+    }
+  ],
+  "released": [
+    {
+      "team": "Ape Capital",
+      "stock": "NVDA",
+      "shares": "0.07751095",
+      "delivered": true
+    },
+    {
+      "team": "Ape Capital",
+      "stock": "MSTR",
+      "shares": "0.11832616",
+      "delivered": true
+    },
+    {
+      "team": "Diamond Hands",
+      "stock": "HOOD",
+      "shares": "0.15703871",
+      "delivered": true
+    },
+    {
+      "team": "Diamond Hands",
+      "stock": "PLTR",
+      "shares": "0.07642051",
+      "delivered": true
+    },
+    {
+      "team": "Bagholders FC",
+      "stock": "AMZN",
+      "shares": "0.042571",
+      "delivered": true
+    },
+    {
+      "team": "Bagholders FC",
+      "stock": "AAPL",
+      "shares": "0.03134226",
+      "delivered": true
+    },
+    {
+      "team": "Theta Gang",
+      "stock": "TSLA",
+      "shares": "0.02887604",
+      "delivered": true
+    },
+    {
+      "team": "Theta Gang",
+      "stock": "META",
+      "shares": "0.01774209",
+      "delivered": true
+    }
+  ],
+  "champion": {
+    "team": "Ape Capital",
+    "wallet": "0x7e57000000000000000000000000000000000A11",
+    "treasuryShares": "0.01265484"
+  },
+  "holdings": [
+    {
+      "team": "Ape Capital",
+      "stock": "NVDA",
+      "shares": "0.09016579",
+      "dividendAdjusted": "0.09021429"
+    },
+    {
+      "team": "Ape Capital",
+      "stock": "TSLA",
+      "shares": "0.00320844",
+      "dividendAdjusted": "0.00320844"
+    },
+    {
+      "team": "Ape Capital",
+      "stock": "META",
+      "shares": "0.00197134",
+      "dividendAdjusted": "0.00197195"
+    },
+    {
+      "team": "Ape Capital",
+      "stock": "MSTR",
+      "shares": "0.11832616",
+      "dividendAdjusted": "0.11832616"
+    },
+    {
+      "team": "Diamond Hands",
+      "stock": "AMZN",
+      "shares": "0.00473011",
+      "dividendAdjusted": "0.00473011"
+    },
+    {
+      "team": "Diamond Hands",
+      "stock": "HOOD",
+      "shares": "0.15703871",
+      "dividendAdjusted": "0.15703871"
+    },
+    {
+      "team": "Diamond Hands",
+      "stock": "PLTR",
+      "shares": "0.07642051",
+      "dividendAdjusted": "0.07642051"
+    },
+    {
+      "team": "Diamond Hands",
+      "stock": "AAPL",
+      "shares": "0.00348247",
+      "dividendAdjusted": "0.00348421"
+    },
+    {
+      "team": "Bagholders FC",
+      "stock": "AMZN",
+      "shares": "0.042571",
+      "dividendAdjusted": "0.042571"
+    },
+    {
+      "team": "Bagholders FC",
+      "stock": "AAPL",
+      "shares": "0.03134226",
+      "dividendAdjusted": "0.03135794"
+    },
+    {
+      "team": "Theta Gang",
+      "stock": "TSLA",
+      "shares": "0.02887604",
+      "dividendAdjusted": "0.02887604"
+    },
+    {
+      "team": "Theta Gang",
+      "stock": "META",
+      "shares": "0.01774209",
+      "dividendAdjusted": "0.01774765"
+    }
+  ],
+  "gas": {
+    "deploy LeagueFactory": 6209412,
+    "deploy SimWhale (dry-run only)": 331850,
+    "createLeague": 5064921,
+    "approve Ape Capital": 55449,
+    "join Ape Capital": 167941,
+    "approve Diamond Hands": 55449,
+    "join Diamond Hands": 133765,
+    "approve Bagholders FC": 55449,
+    "join Bagholders FC": 133765,
+    "approve Theta Gang": 55449,
+    "join Theta Gang": 133729,
+    "startDraft": 159521,
+    "pick 1: Ape Capital takes NVDA": 569850,
+    "pick 2: Theta Gang takes TSLA": 529414,
+    "pick 3: Bagholders FC takes AMZN": 560893,
+    "pick 4: Diamond Hands takes HOOD": 485724,
+    "pick 5: Diamond Hands takes PLTR": 477423,
+    "pick 6: Bagholders FC takes AAPL": 491462,
+    "pick 7: Theta Gang takes META": 490938,
+    "pick 8: Ape Capital takes MSTR": 1404781,
+    "outside buyer spends $25000 on HOOD": 361540,
+    "settle week 1": 774196,
+    "settle week 2 (season ends)": 777234
+  }
+}
