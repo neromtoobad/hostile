@@ -1,0 +1,232 @@
+{
+  "chainId": 8453,
+  "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "measuredAt": "2026-11-17",
+  "source": "api.coinbase.com/v1/tokenized-stocks + DexScreener pool liquidity",
+  "stocks": [
+    {
+      "symbol": "AMZN",
+      "token": "0xb200000000000000000000d9192b6B456483C2E8",
+      "name": "Amazon.com Inc.",
+      "pool": "0x532e0F46d1e528507FC9454d5847C231f23bDDf6",
+      "poolUsdcLiquidity": 1781255,
+      "volume24h": 10107728
+    },
+    {
+      "symbol": "SNDK",
+      "token": "0xb200000000000000000000397293Cb8cda9a10c5",
+      "name": "Sandisk Corporation",
+      "pool": "0x2836e062a3fe75943a7F4A552E2365b98E414E75",
+      "poolUsdcLiquidity": 1751412,
+      "volume24h": 27104304
+    },
+    {
+      "symbol": "GOOGL",
+      "token": "0xb2000000000000000000002D0BA3164cc74f58B7",
+      "name": "Alphabet Inc.",
+      "pool": "0x16c70F04C3080a127486Cdf5a4C33c066bBF47C3",
+      "poolUsdcLiquidity": 1703300,
+      "volume24h": 9021015
+    },
+    {
+      "symbol": "NVDA",
+      "token": "0xb20000000000000000000078ee7ce2fE4908108C",
+      "name": "NVIDIA Corporation",
+      "pool": "0xF668e21993f0ACd7ab00BB1cFbAeD0df28A3C8EC",
+      "poolUsdcLiquidity": 1579103,
+      "volume24h": 13423515
+    },
+    {
+      "symbol": "SPCX",
+      "token": "0xb2000000000000000000007b9fcbd005511aCBd5",
+      "name": "Space Exploration Technologies Corp.",
+      "pool": "0x880dB7Dda4407D99508574E680d067D1164B3cFE",
+      "poolUsdcLiquidity": 988457,
+      "volume24h": 12382529
+    },
+    {
+      "symbol": "META",
+      "token": "0xb2000000000000000000008bC8786B856E61707C",
+      "name": "Meta Platforms Inc.",
+      "pool": "0xd072410fa13D242e1d53721Bcf7AF02e3455DC96",
+      "poolUsdcLiquidity": 844880,
+      "volume24h": 9344349
+    },
+    {
+      "symbol": "MSTR",
+      "token": "0xb2000000000000000000004884b426556b92883d",
+      "name": "Strategy Inc.",
+      "pool": "0x66DCd42E6314B287110922AE36cB2a8bdEECc153",
+      "poolUsdcLiquidity": 615700,
+      "volume24h": 28032048
+    },
+    {
+      "symbol": "MU",
+      "token": "0xb200000000000000000000Fd2f87532B90095211",
+      "name": "Micron Technology Inc.",
+      "pool": "0x41e21950362B1014bC629252ecFFF8fcA5F1646C",
+      "poolUsdcLiquidity": 530635,
+      "volume24h": 7489349
+    },
+    {
+      "symbol": "TSLA",
+      "token": "0xb2000000000000000000001e800a7f5189430cD0",
+      "name": "Tesla Inc.",
+      "pool": "0x7A33000372f3F028f074182CCb9d16cBEEfBF920",
+      "poolUsdcLiquidity": 475777,
+      "volume24h": 5583754
+    },
+    {
+      "symbol": "AAPL",
+      "token": "0xb200000000000000000000C2e324d24d7eEcd1fb",
+      "name": "Apple Inc.",
+      "pool": "0xF5FCB9CDAFcE67d50AfEf298F88E709d2B946BA6",
+      "poolUsdcLiquidity": 436490,
+      "volume24h": 3756401
+    },
+    {
+      "symbol": "PLTR",
+      "token": "0xb2000000000000000000007d16372840dF4dAbbe",
+      "name": "Palantir Technologies Inc.",
+      "pool": "0xA0473ceD0cd1bfB857e3E04B5FA4b6aF18C5e44d",
+      "poolUsdcLiquidity": 390716,
+      "volume24h": 2459885
+    },
+    {
+      "symbol": "MSFT",
+      "token": "0xB200000000000000000000Ab99cFa739E253872B",
+      "name": "Microsoft Corporation",
+      "pool": "0x2740C0faAb738F6e346e545fDE02aEF9B1A01ee7",
+      "poolUsdcLiquidity": 377153,
+      "volume24h": 5255691
+    },
+    {
+      "symbol": "AMD",
+      "token": "0xB2000000000000000000000d8Ce462E99ee7A47B",
+      "name": "Advanced Micro Devices, Inc.",
+      "pool": "0x138Cb591C4A7D854D796E1906af8228d84CB7642",
+      "poolUsdcLiquidity": 295264,
+      "volume24h": 3340315
+    },
+    {
+      "symbol": "NFLX",
+      "token": "0xb20000000000000000000058B8c947e44011dFE6",
+      "name": "Netflix Inc",
+      "pool": "0x67Ba8dBeDC6D7f93f0F5967Aa2420715f1edC756",
+      "poolUsdcLiquidity": 292416,
+      "volume24h": 1601441
+    },
+    {
+      "symbol": "ORCL",
+      "token": "0xb200000000000000000000347AFbA223D7B6b63C",
+      "name": "Oracle Corporation",
+      "pool": "0x62B5452E80E50B047dcF6dd3Fb6a1D266C678eB5",
+      "poolUsdcLiquidity": 261195,
+      "volume24h": 2112552
+    },
+    {
+      "symbol": "HIMS",
+      "token": "0xB20000000000000000000043a599976181Bcf336",
+      "name": "Hims & Hers Health, Inc.",
+      "pool": "0x41D7793FAa4Ca181B6f021423fF3F9015C00b2ff",
+      "poolUsdcLiquidity": 247045,
+      "volume24h": 1352771
+    },
+    {
+      "symbol": "TTWO",
+      "token": "0xB200000000000000000000f720C26062Bc3067Da",
+      "name": "Take-Two Interactive Software, Inc.",
+      "pool": "0x18907cAE5a9c7b45F85c5d2e1F7508C27c134f83",
+      "poolUsdcLiquidity": 233029,
+      "volume24h": 1212154
+    },
+    {
+      "symbol": "AVGO",
+      "token": "0xB200000000000000000000Fc737aeA6196aB5a4c",
+      "name": "Broadcom Inc.",
+      "pool": "0x086A1447D0851F0aeA9D09D6c547fEC8E97be413",
+      "poolUsdcLiquidity": 231695,
+      "volume24h": 230784
+    },
+    {
+      "symbol": "CRCL",
+      "token": "0xB20000000000000000000019f6E7C675b73C2e4D",
+      "name": "Circle Internet Group Inc.",
+      "pool": "0x294666AD6a415E8C33Af801225c04079BB4f1133",
+      "poolUsdcLiquidity": 231386,
+      "volume24h": 117524
+    },
+    {
+      "symbol": "MRVL",
+      "token": "0xB200000000000000000000eC3c4c7395Cc609813",
+      "name": "Marvell Technology, Inc.",
+      "pool": "0x611ab290422d534D9595b01e648911fefA963137",
+      "poolUsdcLiquidity": 227796,
+      "volume24h": 95158
+    },
+    {
+      "symbol": "BE",
+      "token": "0xb20000000000000000000016f9dfe862feBA122b",
+      "name": "Bloom Energy Corporation",
+      "pool": "0xDe2BfE5409aD9e825cdB3562A06EDaFb9d753DFc",
+      "poolUsdcLiquidity": 224312,
+      "volume24h": 165828
+    },
+    {
+      "symbol": "INTC",
+      "token": "0xB2000000000000000000004AFF16039bA04bdFBc",
+      "name": "Intel Corporation",
+      "pool": "0x3D384288fA79B51De882B06B617aB7989CcAd4f3",
+      "poolUsdcLiquidity": 223474,
+      "volume24h": 147330
+    },
+    {
+      "symbol": "LLY",
+      "token": "0xB200000000000000000000f1a0F91e34892E4718",
+      "name": "Eli Lilly & Co",
+      "pool": "0x2b7ee4623ec6AfbC1e587b2668c0ED8F3ff44949",
+      "poolUsdcLiquidity": 223377,
+      "volume24h": 62768
+    },
+    {
+      "symbol": "MRNA",
+      "token": "0xB200000000000000000000e215e9B76ecBA02468",
+      "name": "Moderna, Inc.",
+      "pool": "0x4ae3780242F43ef63C471Fb8c2E9D30ec5fd5821",
+      "poolUsdcLiquidity": 223224,
+      "volume24h": 56138
+    },
+    {
+      "symbol": "LITE",
+      "token": "0xB200000000000000000000eDA6C2c6F11E0F838f",
+      "name": "Lumentum Holdings Inc",
+      "pool": "0x16B8228cD097865d8F5A534B95e42e17D84551b0",
+      "poolUsdcLiquidity": 218858,
+      "volume24h": 2781
+    },
+    {
+      "symbol": "AAOI",
+      "token": "0xb200000000000000000000cf36D05963A3E2205c",
+      "name": "Applied Optoelectronics Inc",
+      "pool": "0xfb35D41801893197b5A4d477D0Bf6737D2AD6106",
+      "poolUsdcLiquidity": 210114,
+      "volume24h": 4667
+    },
+    {
+      "symbol": "BRK.B",
+      "token": "0xb20000000000000000000024170488e788CBbCb4",
+      "name": "Berkshire Hathaway Inc. Class B",
+      "pool": "0xBc5682De77d729397739982a577b7963eF2f6556",
+      "poolUsdcLiquidity": 209809,
+      "volume24h": 1266
+    },
+    {
+      "symbol": "HOOD",
+      "token": "0xb2000000000000000000006F944897540579D3f2",
+      "name": "Robinhood Markets, Inc.",
+      "pool": "0x25B45fF27bd03dAfa0C0bf458762FFD0911fA9de",
+      "poolUsdcLiquidity": 164815,
+      "volume24h": 21033
+    }
+  ]
+}
