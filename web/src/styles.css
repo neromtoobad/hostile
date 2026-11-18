@@ -560,6 +560,9 @@ a.stack-card:hover { translate: 0 -4px; }
 
 /* ───────── small screens ───────── */
 
+/* the lineup drops its outer players before they would be cut off */
+@media (max-width: 1180px) { .player.hp-0, .player.hp-6 { display: none; } }
+@media (max-width: 940px) { .player.hp-1, .player.hp-5 { display: none; } }
 @media (max-width: 960px) {
   .how, .split { grid-template-columns: 1fr; gap: 40px; }
   #how { padding-top: 88px; }
