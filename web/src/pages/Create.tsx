@@ -7,7 +7,7 @@ import { FACTORY } from "../lib/chain";
 import { metaOf } from "../lib/league";
 import { TxButton } from "../components/Tx";
 import { StockIcon } from "../components/Stock";
-import { Manager } from "../components/Cast";
+import { Mascot, seatFace } from "../components/Mascot";
 
 const WEEK_OPTIONS = [
   { label: "1 hour (quick test)", s: 3600 },
@@ -75,8 +75,8 @@ export function CreateLeague() {
             </select>
           </label>
         </div>
-        <div className="lineup-preview" title="Each seat plays as one of the four managers">
-          {[...Array(players).keys()].map((i) => <Manager key={i} seat={i} height={players > 6 ? 70 : 88} />)}
+        <div className="lineup-preview" title="Each team plays as its captain stock">
+          {[...Array(players).keys()].map((i) => <Mascot key={i} symbol={seatFace(i)} height={players > 6 ? 64 : 84} />)}
         </div>
         {tooMany && <p className="tx-error">{players} players × {roster} stocks is more than the {tokens.length} stocks you can draft.</p>}
 

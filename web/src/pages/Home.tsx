@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { exampleMatch, loadBoard, loadLeagues, PHASES, type BoardRow } from "../lib/league";
 import { money, tickPct, usd } from "../lib/format";
 import { StockIcon } from "../components/Stock";
-import { CAST, Manager, type Pose } from "../components/Cast";
+import { Mascot, moodOf, seatFace, type Mood } from "../components/Mascot";
 import { Reveal } from "../components/Reveal";
 
 const STEPS = [
@@ -13,11 +13,15 @@ const STEPS = [
   { t: "Collect, or pay up", d: "The loser sends 10% of every share they hold to the winner's wallet." },
 ];
 
-const DAYS: { seat: number; pose: Pose; t: string; d: string }[] = [
-  { seat: 0, pose: "ready", t: "Draft day", d: "Everyone joins with the same entry. The draft order is shuffled onchain, then the clock starts." },
-  { seat: 1, pose: "up", t: "Matchday", d: "All week, your manager reacts to the live score. Your captain counts double." },
-  { seat: 2, pose: "down", t: "Payday", d: "When the week ends, anyone can settle it. Shares move to the winner's wallet in that transaction." },
+const DAYS: { sym: string; mood: Mood; tag: string; t: string; d: string }[] = [
+  { sym: "NVDA", mood: "ready", tag: "NVDA · first pick", t: "Draft day", d: "Everyone joins with the same entry. The draft order is shuffled onchain, then the clock starts." },
+  { sym: "TSLA", mood: "up", tag: "TSLA · up this week", t: "Matchday", d: "Your captain's mascot cheers or sulks with your live score. Your captain counts double." },
+  { sym: "AAPL", mood: "down", tag: "AAPL · lost the week", t: "Payday", d: "When the week ends, anyone can settle it. Shares move to the winner's wallet in that transaction." },
 ];
+
+// The hero lineup: the biggest names on the board, each moving with its real 30-minute price change.
+const LINEUP = ["META", "AAPL", "TSLA", "NVDA", "MSTR", "PLTR", "NFLX"];
+const LINEUP_H = [112, 142, 172, 214, 172, 142, 112];
 
 const JOIN = [
   { t: "Send the link", d: "Each league has its own page at /l/<address>." },
@@ -56,8 +60,19 @@ export function Home() {
         </div>
       </section>
 
-      <div className="hero-art wrap">
-        <img src="/cast/hero.webp" alt="Four rival managers squaring up over a share" />
+      <div className="hero-art wrap" aria-label="Stock mascots, each moving with its live price">
+        {LINEUP.map((sym, i) => {
+          const r = rows.find((x) => x.meta.symbol === sym);
+          return (
+            <figure key={sym} className={`hero-player hp-${i}`}>
+              <Mascot symbol={sym} mood={moodOf(r?.move30)} height={LINEUP_H[i]} />
+              <figcaption>
+                <b>{sym}</b>
+                {r?.move30 !== undefined && <span className={r.move30 >= 0 ? "up" : "down"}>{tickPct(r.move30)}</span>}
+              </figcaption>
+            </figure>
+          );
+        })}
       </div>
 
       <section className="band band-stats">
@@ -92,7 +107,7 @@ export function Home() {
 
           <div className="pcard">
             <div className="pcard-head">
-              <span className="pcard-icon"><StockIcon meta={nvda?.meta ?? { symbol: "N", name: "" }} size={40} /></span>
+              <span className="pcard-icon"><Mascot symbol="NVDA" mood={moodOf(nvda?.move30)} height={56} /></span>
               <div>
                 <span className="pcard-sub">NVIDIA</span>
                 <b className="pcard-title">NVDA</b>
@@ -128,13 +143,13 @@ export function Home() {
           <div className="sec-head">
             <span className="kicker">A season · three kinds of day</span>
             <h2 className="display-md">Draft. Play the week.<br />Settle up.</h2>
-            <p className="lede">Each friend gets one of four rival managers, and their mood follows your real score.</p>
+            <p className="lede">Every stock you can draft is a player with its own mascot. Your team plays as your captain.</p>
           </div>
           <div className="days">
             {DAYS.map((d) => (
               <div className="day" key={d.t}>
-                <div className="day-stage"><Manager seat={d.seat} pose={d.pose} height={200} /></div>
-                <span className="role-name">{CAST[d.seat]}</span>
+                <div className="day-stage"><Mascot symbol={d.sym} mood={d.mood} height={190} /></div>
+                <span className="role-name">{d.tag}</span>
                 <h3>{d.t}</h3>
                 <p>{d.d}</p>
               </div>
@@ -179,14 +194,14 @@ export function Home() {
             {leagues.isLoading && <div className="stack-card"><span className="muted">Loading leagues from the factory…</span></div>}
             {leagues.data?.length === 0 && (
               <div className="stack-card">
-                <Manager seat={3} pose="ready" height={64} />
+                <Mascot symbol="HOOD" height={64} />
                 <div className="stack-body"><b>No leagues yet</b><span>Start the first one and send the link to three friends.</span></div>
                 <span className="stack-tag">Open</span>
               </div>
             )}
             {leagues.data?.slice(0, 5).map((l, i) => (
               <Link key={l.address} to={`/l/${l.address}`} className="stack-card">
-                <Manager seat={i} pose="ready" height={64} />
+                <Mascot symbol={seatFace(i)} height={64} />
                 <div className="stack-body">
                   <b>{l.name}</b>
                   <span>{l.managers}/{l.maxManagers} players · {usd(l.entryFee)} entry · {l.weeks} week{l.weeks === 1 ? "" : "s"}</span>
@@ -209,7 +224,9 @@ export function Home() {
       <section className="sec sec-white closer">
         <Reveal className="wrap closer-in">
           <div className="closer-cast">
-            {[0, 1, 2, 3].map((i) => <Manager key={i} seat={i} pose={i === 3 ? "champ" : "ready"} height={140} />)}
+            {["AMZN", "GOOGL", "MSTR", "NVDA", "SPCX", "BRK.B", "TTWO"].map((sym, i) => (
+              <Mascot key={sym} symbol={sym} mood={i === 3 ? "champ" : "ready"} height={i === 3 ? 150 : 110} />
+            ))}
           </div>
           <h2 className="display-md">Pick a fight.</h2>
           <p className="lede">Up to 12 friends, any entry fee. A "week" can be as short as an hour, so a whole season fits in one evening.</p>
@@ -221,9 +238,9 @@ export function Home() {
 }
 
 function MatchCard({ rows, match }: { rows: BoardRow[]; match?: ReturnType<typeof exampleMatch> }) {
-  const side = (name: string, seat: number, team: BoardRow[], score: number, other: number) => (
+  const side = (name: string, team: BoardRow[], score: number, other: number) => (
     <div className={`mc-side ${score > other ? "lead" : ""}`}>
-      <Manager seat={seat} pose={score === other ? "ready" : score > other ? "up" : "down"} height={110} />
+      <Mascot symbol={team[0].meta.symbol} mood={score === other ? "ready" : score > other ? "up" : "down"} height={110} />
       <span className="mc-name">{name}</span>
       <b className={`mc-score ${score >= 0 ? "up" : "down"}`}>{tickPct(score)}</b>
       <div className="mc-stocks">
@@ -248,9 +265,9 @@ function MatchCard({ rows, match }: { rows: BoardRow[]; match?: ReturnType<typeo
       {!match && <p className="muted">{rows.length ? "" : "Reading prices from Base…"}</p>}
       {match && (
         <div className="mc">
-          {side("Diamond Hands", 0, match.a, match.scoreA, match.scoreB)}
+          {side("Diamond Hands", match.a, match.scoreA, match.scoreB)}
           <span className="mc-vs">vs</span>
-          {side("Bag Holders", 3, match.b, match.scoreB, match.scoreA)}
+          {side("Bag Holders", match.b, match.scoreB, match.scoreA)}
         </div>
       )}
       <div className="pcard-foot"><span>Real price moves over the last 30 minutes</span><span>Scored like the contract: captain ×2</span></div>

@@ -10,7 +10,7 @@ import { type Activity, type LeagueState, type Manager, PHASES, loadActivity, lo
 import { money, shares, short, tickPct, usd, weekLengthLabel } from "../lib/format";
 import { TxButton } from "../components/Tx";
 import { Countdown, StockIcon, StockTag } from "../components/Stock";
-import { Manager as MgrFig, poseFor } from "../components/Cast";
+import { Mascot, moodFor, seatFace, teamFace } from "../components/Mascot";
 
 function useNow() {
   const [now, setNow] = useState(Math.floor(Date.now() / 1000));
@@ -113,7 +113,7 @@ function Lobby({ L, me, mySeat, refresh }: { L: LeagueState; me?: Address; mySea
           const m = L.managers[s];
           return (
             <div key={s} className={`seat ${m ? "taken" : ""} ${m && sameAddr(m.wallet, me) ? "mine" : ""}`}>
-              <div className="seat-stage">{m ? <MgrFig seat={s} height={150} /> : <MgrFig seat={s} height={150} className="ghost" />}</div>
+              <div className="seat-stage"><Mascot symbol={seatFace(s)} height={140} className={m ? "" : "ghost"} /></div>
               {m ? (<><b>{m.team}</b><span className="muted">{short(m.wallet)}{sameAddr(m.wallet, L.commissioner) ? " · commissioner" : ""}</span></>) : <><b className="muted">Open seat</b><span className="muted">{usd(L.config.entryFee)} to take it</span></>}
             </div>
           );
@@ -171,7 +171,7 @@ function DraftRoom({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: numbe
   return (
     <section className="block">
       <div className={`clock-banner ${myTurn ? "mine" : ""}`}>
-        <MgrFig seat={clock} height={128} className="clock-fig" />
+        <Mascot symbol={teamFace(L, onClock)} mood={myTurn ? "up" : "ready"} height={128} className="clock-fig" />
         <div className="clock-copy">
           <span className="muted">Pick {L.pickNumber + 1} of {total}</span>
           <h2 className="display-sm">{myTurn ? "You're on the clock" : `${onClock.team} is picking`}</h2>
@@ -202,6 +202,9 @@ function DraftRoom({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: numbe
           const min = s.price ? BigInt(Math.floor(((Number(L.perPickUsdc) / 1e6 / s.price) * 1e8) * 0.97)) : 0n;
           return (
             <div key={s.id} className={`card ${taken ? "taken" : ""}`}>
+              <div className="card-stage">
+                <Mascot symbol={s.meta.symbol} height={104} />
+              </div>
               <div className="card-top">
                 <StockIcon meta={s.meta} size={30} />
                 <div>
@@ -283,7 +286,7 @@ function Season({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: number; 
 function Matchup({ L, a, b, mySeat }: { L: LeagueState; a: Manager; b?: Manager; mySeat?: number }) {
   const side = (m: Manager, lead: boolean, rival?: Manager) => (
     <div className={`side ${lead ? "lead" : ""} ${m.seat === mySeat ? "me" : ""}`}>
-      <MgrFig seat={m.seat} pose={poseFor(m.liveScore, rival?.liveScore)} />
+      <Mascot symbol={teamFace(L, m)} mood={moodFor(m.liveScore, rival?.liveScore)} height={150} />
       <div className="side-head">
         <b>{m.team}</b>
         <span className="muted">{m.wins}-{m.losses}{m.ties ? `-${m.ties}` : ""}</span>
@@ -323,7 +326,7 @@ function Standings({ L }: { L: LeagueState }) {
         <tbody>
           {rows.map((m) => (
             <tr key={m.seat}>
-              <td className="st-team"><MgrFig seat={m.seat} pose={L.phase === 3 && L.champion?.seat === m.seat ? "champ" : "ready"} height={40} /><b>{m.team}</b></td>
+              <td className="st-team"><Mascot symbol={teamFace(L, m)} mood={L.phase === 3 && L.champion?.seat === m.seat ? "champ" : "ready"} height={44} /><b>{m.team}</b></td>
               <td>{m.wins}</td><td>{m.losses}</td><td>{m.ties}</td>
               <td className={m.total >= 0 ? "up" : "down"}>{tickPct(m.total)}</td>
               <td>{money(bagValue(L, m))}</td>
@@ -371,7 +374,7 @@ function Final({ L }: { L: LeagueState }) {
     <section className="block">
       {champ && (
         <div className="champion">
-          <MgrFig seat={champ.seat} pose="champ" height={220} className="champ-fig" />
+          <Mascot symbol={teamFace(L, champ)} mood="champ" height={210} className="champ-fig" />
           <span className="kicker kicker-on-blue">Champion</span>
           <h2 className="display">{champ.team}</h2>
           <p>{champ.wins} wins · took the treasury · {short(champ.wallet)}</p>
