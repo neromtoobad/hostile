@@ -287,7 +287,13 @@ export const sameAddr = (a?: string, b?: string) => !!a && !!b && getAddress(a) 
 
 const token0Abi = [{ type: "function", name: "token0", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] }] as const;
 
-export type BoardRow = { token: Address; meta: Meta; price?: number };
+export type BoardRow = {
+  token: Address;
+  meta: Meta;
+  price?: number;
+  /** Price move over the last 30 minutes, in ticks (+100 ≈ +1%), from the pool's own oracle. */
+  move30?: number;
+};
 export type Board = { rows: BoardRow[]; stockCount: number; leagueCount: number };
 
 /** Reads the factory's draftable stocks and each one's current price from its Aerodrome pool. */
@@ -304,17 +310,36 @@ export async function loadBoard(): Promise<Board> {
     contracts: pools.flatMap((p) => [
       { address: p, abi: token0Abi, functionName: "token0" },
       { address: p, abi: poolAbi, functionName: "slot0" },
+      { address: p, abi: poolAbi, functionName: "observe", args: [[1800, 1799, 1, 0]] },
     ] as const),
   });
   const rows = tokens.map((t, i) => {
-    const t0 = reads[i * 2];
-    const s0 = reads[i * 2 + 1];
+    const t0 = reads[i * 3];
+    const s0 = reads[i * 3 + 1];
+    const ob = reads[i * 3 + 2];
     let price: number | undefined;
+    let move30: number | undefined;
     if (t0.status === "success" && s0.status === "success") {
       const usdcIsToken0 = getAddress(t0.result as Address) !== getAddress(t);
       price = priceFromSqrt((s0.result as readonly [bigint, number])[0], usdcIsToken0);
+      if (ob.status === "success") {
+        const c = (ob.result as readonly [readonly bigint[], readonly bigint[]])[0];
+        const then = Number(c[1] - c[0]); // pool tick 30 minutes ago
+        const now = Number(c[3] - c[2]); // pool tick a second ago
+        move30 = usdcIsToken0 ? then - now : now - then;
+      }
     }
-    return { token: t, meta: metaOf(t), price };
+    return { token: t, meta: metaOf(t), price, move30 };
   });
   return { rows, stockCount: tokens.length, leagueCount: Number(leagueCount) };
+}
+
+/** An example matchup scored the way the contract scores a week (sum of tick moves, captain x2),
+ *  over the last 30 minutes of real prices. The teams are examples; the numbers are live. */
+export function exampleMatch(rows: BoardRow[]) {
+  const pick = (syms: string[]) => syms.map((s) => rows.find((r) => r.meta.symbol === s)).filter((r): r is BoardRow => !!r);
+  const a = pick(["NVDA", "TSLA", "AAPL"]);
+  const b = pick(["MSFT", "META", "AMZN"]);
+  const score = (team: BoardRow[]) => team.reduce((sum, r, i) => sum + (r.move30 ?? 0) * (i === 0 ? 2 : 1), 0);
+  return { a, b, scoreA: score(a), scoreB: score(b) };
 }
