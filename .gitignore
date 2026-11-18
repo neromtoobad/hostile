@@ -8,3 +8,6 @@ contracts/broadcast/**/dry-run/
 contracts/broadcast/**/run-[0-9]*.json
 .DS_Store
 JUDGE-SELF.md
+web/dist/
+.claude/
+.vercel
