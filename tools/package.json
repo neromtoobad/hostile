@@ -3,9 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dry-run": "node live-dry-run.mjs"
+    "dry-run": "node live-dry-run.mjs",
+    "keeper": "node keeper.mjs",
+    "test": "node --test keeper.test.mjs"
   },
   "dependencies": {
+    "ox": "^0.14.67",
     "viem": "^2.58.0"
   }
 }
