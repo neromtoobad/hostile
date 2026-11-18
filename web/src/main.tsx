@@ -5,6 +5,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { wagmiConfig, FACTORY, COINS, FORK_RPC, basescan } from "./lib/chain";
 import { Wallet } from "./components/Wallet";
+import { Logo } from "./components/Logo";
 import { Home } from "./pages/Home";
 import { CreateLeague } from "./pages/Create";
 import { LeaguePage } from "./pages/League";
@@ -17,20 +18,25 @@ function Shell() {
     <>
       {FORK_RPC && <div className="fork-banner">Local fork of Base at {FORK_RPC}. Nothing here is real money.</div>}
       <header className="top">
-        <Link to="/" className="wordmark">HOSTILE</Link>
-        <nav className="top-nav">
-          <Link to="/new">Start a league</Link>
-        </nav>
-        <Wallet />
+        <div className="wrap top-in">
+          <Link to="/" className="wordmark"><Logo /></Link>
+          <nav className="top-nav">
+            <Link to="/new">Start a league</Link>
+            <a href="/#leagues">Leagues</a>
+            <a href="https://github.com/neromtoobad/hostile" target="_blank" rel="noreferrer">Source</a>
+          </nav>
+          <Wallet />
+        </div>
       </header>
-      <main className="page">
+      <main>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/new" element={<CreateLeague />} />
-          <Route path="/l/:address" element={<LeaguePage />} />
+          <Route path="/new" element={<div className="wrap page-pad"><CreateLeague /></div>} />
+          <Route path="/l/:address" element={<div className="wrap page-pad"><LeaguePage /></div>} />
         </Routes>
       </main>
-      <footer className="foot">
+      <footer className="foot wrap">
+        <Logo />
         <p>
           Shares are Coinbase-issued stock tokens on Base, bought on Aerodrome. Not available to US persons.
           Stock prices go down as well as up; you can lose your entry.
