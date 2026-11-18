@@ -3,12 +3,18 @@ pragma solidity 0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
 import {LeagueFactory} from "../src/LeagueFactory.sol";
+import {LeagueCoins} from "../src/LeagueCoins.sol";
+import {IStonksLauncher, IStonksFeeLocker} from "../src/interfaces/IStonks.sol";
 
 /// Deploys LeagueFactory on Base mainnet with the liquid stocks from stocks.base.json.
 ///   forge script script/Deploy.s.sol --rpc-url base --broadcast --verify
 /// Note: forge's local simulation cannot run Coinbase's B20 precompiles, but the factory
 /// constructor never calls them, so the deploy simulates fine.
 contract Deploy is Script {
+    // Stonks Exchange V2 on Base (Stocks Maxxing launchpad partner).
+    address constant STONKS_LAUNCHER = 0xD58a240995405941cdbA41cd35d7920F2B212B4a;
+    address constant STONKS_LOCKER = 0x43555104f569D17026037E5637691b95c79fD03A;
+
     function run() external {
         string memory json = vm.readFile(string.concat(vm.projectRoot(), "/script/stocks.base.json"));
         address usdc = vm.parseJsonAddress(json, ".usdc");
@@ -42,8 +48,10 @@ contract Deploy is Script {
 
         vm.startBroadcast();
         LeagueFactory factory = new LeagueFactory(usdc, tokens, pools);
+        LeagueCoins coins = new LeagueCoins(factory, IStonksLauncher(STONKS_LAUNCHER), IStonksFeeLocker(STONKS_LOCKER));
         vm.stopBroadcast();
         console.log("LeagueFactory", address(factory), "stocks", n);
+        console.log("LeagueCoins", address(coins));
     }
 
     /// Pools that barely trade: left out of the draft list.
