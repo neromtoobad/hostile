@@ -1,0 +1,24 @@
+{
+  "chain": "base-mainnet",
+  "chainId": 8453,
+  "deployedAt": "2026-11-18",
+  "deployer": "0x1e4435e87c93e7Fe1DaF2121E5E92E5d3AFec412",
+  "contracts": {
+    "LeagueFactory": {
+      "address": "0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997",
+      "tx": "0xa60e7451335d386f5b2fa089c7af5a873fb7dcd9d4f24835794a200cf9532674",
+      "block": 59016290,
+      "stocks": 25,
+      "source": "https://repo.sourcify.dev/8453/0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997"
+    },
+    "LeagueCoins": {
+      "address": "0xf84A05F17545f52914c82eB89b8aDb52e02770D6",
+      "tx": "0xa6fdf361ac0b51bcc95731629159b87f1ee78f450ef5af652074ec71779d21cb",
+      "block": 59016294,
+      "stonksLauncher": "0xD58a240995405941cdbA41cd35d7920F2B212B4a",
+      "stonksFeeLocker": "0x43555104f569D17026037E5637691b95c79fD03A",
+      "source": "https://repo.sourcify.dev/8453/0xf84A05F17545f52914c82eB89b8aDb52e02770D6"
+    }
+  },
+  "verification": "Sourcify exact_match (creation + runtime) for both contracts"
+}
