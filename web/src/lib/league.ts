@@ -47,6 +47,7 @@ export type Manager = {
   weekScores: number[];
   liveScore: number; // this week so far, estimated from the live TWAP; final only when settled
   opponent?: number; // this week's opponent seat (undefined = bye)
+  nextCaptain?: number; // captain queued for next week (season only), from CaptainSet events
 };
 
 export type Config = {
@@ -194,14 +195,7 @@ export async function loadLeague(address: Address): Promise<LeagueState> {
     const roster = (perSeat[k + 1] as readonly number[]).map(Number);
     const captain = Number(perSeat[k + 2]);
     const opp = perSeat[k + 7] as readonly [boolean, bigint];
-    let liveScore = 0;
-    if (ph === 2) {
-      for (const id of roster) {
-        const st = stocks[id];
-        const move = st.liveTick === undefined ? 0 : st.liveTick - st.markTick;
-        liveScore += id === captain ? move * 2 : move;
-      }
-    }
+    const liveScore = ph === 2 ? liveScoreOf(stocks, roster, captain) : 0;
     return {
       seat: s, wallet: managers[s], team: perSeat[k] as string, roster, captain,
       wins: Number(perSeat[k + 3]), losses: Number(perSeat[k + 4]), ties: Number(perSeat[k + 5]),
@@ -279,6 +273,34 @@ export async function loadActivity(address: Address): Promise<Activity[]> {
   return parseEventLogs({ abi: LeagueAbi, logs }).map((e) => ({
     kind: e.eventName, block: e.blockNumber!, tx: e.transactionHash!, args: e.args as Record<string, unknown>,
   }));
+}
+
+/** This week's live score for a roster: each stock's tick move since the week mark, captain twice. */
+export const liveScoreOf = (stocks: Stock[], roster: number[], captain: number) =>
+  roster.reduce((sum, id) => {
+    const st = stocks[id];
+    const move = st.liveTick === undefined ? 0 : st.liveTick - st.markTick;
+    return sum + (id === captain ? move * 2 : move);
+  }, 0);
+
+/** A captain changed during the season is stored privately and only swapped in when its week is
+ *  settled (League.sol setCaptain / settleWeek). The CaptainSet events say what is queued: the
+ *  latest one per seat wins. If its week has already started, it is the captain the contract will
+ *  score this week, so the live score uses it; otherwise it is shown as next week's captain. */
+export function withQueuedCaptains(L: LeagueState, acts?: Activity[]): LeagueState {
+  if (L.phase !== 2 || !acts) return L;
+  const latest = new Map<number, { stock: number; from: number }>();
+  for (const a of acts) {
+    if (a.kind !== "CaptainSet") continue;
+    latest.set(Number(a.args.seat), { stock: Number(a.args.stockId), from: Number(a.args.fromWeek) });
+  }
+  const managers = L.managers.map((m) => {
+    const q = latest.get(m.seat);
+    if (!q || q.from === 0 || q.stock === m.captain) return m;
+    if (q.from <= L.weeksSettled) return { ...m, captain: q.stock, liveScore: liveScoreOf(L.stocks, m.roster, q.stock) };
+    return { ...m, nextCaptain: q.stock };
+  });
+  return { ...L, managers };
 }
 
 export const sameAddr = (a?: string, b?: string) => !!a && !!b && getAddress(a) === getAddress(b);
