@@ -1,0 +1,142 @@
+{
+ "0xb200000000000000000000d9192b6b456483c2e8": {
+  "symbol": "AMZN",
+  "name": "Amazon.com",
+  "icon": "https://metadata.coinbase.com/equity_icons/06d3c2cac2c89e3a8bc4b2fe40ff259f104b55244321dea400e44b22f215896b.png"
+ },
+ "0xb200000000000000000000397293cb8cda9a10c5": {
+  "symbol": "SNDK",
+  "name": "Sandisk",
+  "icon": "https://metadata.coinbase.com/equity_icons/495de6bc9902690826d533b9506494890f59d611d10f04231c00936f659bb0cb.png"
+ },
+ "0xb2000000000000000000002d0ba3164cc74f58b7": {
+  "symbol": "GOOGL",
+  "name": "Alphabet",
+  "icon": "https://metadata.coinbase.com/equity_icons/0e80e31df40f7c42b49a3c7f6d23c6351625d73f235aeb69006ddee9221702b0.png"
+ },
+ "0xb20000000000000000000078ee7ce2fe4908108c": {
+  "symbol": "NVDA",
+  "name": "NVIDIA",
+  "icon": "https://metadata.coinbase.com/equity_icons/1fee9b7a44e800d438dd9d96c3283e05784c925c2c871a48ff735950740b551a.png"
+ },
+ "0xb2000000000000000000007b9fcbd005511acbd5": {
+  "symbol": "SPCX",
+  "name": "Space Exploration Technologies",
+  "icon": "https://metadata.coinbase.com/equity_icons/79fa65beabbe27c7b84a38b8f67a492793a0c203a5312c8feddc23e4b7c66b79.png"
+ },
+ "0xb2000000000000000000008bc8786b856e61707c": {
+  "symbol": "META",
+  "name": "Meta Platforms",
+  "icon": "https://metadata.coinbase.com/equity_icons/1cedbfb3caee9498470945ff5041715b8c90921d904b3567a43bc4df82069e66.png"
+ },
+ "0xb2000000000000000000004884b426556b92883d": {
+  "symbol": "MSTR",
+  "name": "Strategy",
+  "icon": "https://metadata.coinbase.com/equity_icons/496024423dd795f8b547ffa0668f12a1e6bf09af247534754546a1a6661c7969.png"
+ },
+ "0xb200000000000000000000fd2f87532b90095211": {
+  "symbol": "MU",
+  "name": "Micron Technology",
+  "icon": "https://metadata.coinbase.com/equity_icons/25fc96eaeae0e9dc2490307a8cae3d153045c29caff8b90679abea6dcfcf7d95.png"
+ },
+ "0xb2000000000000000000001e800a7f5189430cd0": {
+  "symbol": "TSLA",
+  "name": "Tesla",
+  "icon": "https://metadata.coinbase.com/equity_icons/a3b67028295d0e9fa3182c867b8a9afed5ebcbd8c012de3a46e160ae5e490980.png"
+ },
+ "0xb200000000000000000000c2e324d24d7eecd1fb": {
+  "symbol": "AAPL",
+  "name": "Apple",
+  "icon": "https://metadata.coinbase.com/equity_icons/873819f4b14efe44b94abecbc8e8864d2998163abd0ca55b449ee6eb07d0d94c.png"
+ },
+ "0xb2000000000000000000007d16372840df4dabbe": {
+  "symbol": "PLTR",
+  "name": "Palantir Technologies",
+  "icon": "https://metadata.coinbase.com/equity_icons/cb8ee560fcd2d52473592e8dbbe3ab4f3e75f4732405a1acbfff8dfc652dd602.png"
+ },
+ "0xb200000000000000000000ab99cfa739e253872b": {
+  "symbol": "MSFT",
+  "name": "Microsoft",
+  "icon": "https://metadata.coinbase.com/equity_icons/e90930ade985016f48816c6bd9fd1e8274b28507f4833881b3a16c77c2a3e2e7.png"
+ },
+ "0xb2000000000000000000000d8ce462e99ee7a47b": {
+  "symbol": "AMD",
+  "name": "Advanced Micro Devices,",
+  "icon": "https://metadata.coinbase.com/equity_icons/15a01962474463e33042583faa6ddaa2ca493101d56d49337b8f7530ecf10a50.png"
+ },
+ "0xb20000000000000000000058b8c947e44011dfe6": {
+  "symbol": "NFLX",
+  "name": "Netflix Inc",
+  "icon": "https://metadata.coinbase.com/equity_icons/a05b651716324c9658fa72b80f6a0c75345326792d50b047eee01d3b631e16a5.png"
+ },
+ "0xb200000000000000000000347afba223d7b6b63c": {
+  "symbol": "ORCL",
+  "name": "Oracle",
+  "icon": "https://metadata.coinbase.com/equity_icons/37fc406ca612c0231f6aba50bdcb1e8057958a075da45d718723986b8ddffd98.png"
+ },
+ "0xb20000000000000000000043a599976181bcf336": {
+  "symbol": "HIMS",
+  "name": "Hims & Hers Health,",
+  "icon": "https://metadata.coinbase.com/equity_icons/c5c723e9033c85cb8ee016a0674a3e1bdc0b2d3027a86aeb8108895479f22a3b.png"
+ },
+ "0xb200000000000000000000f720c26062bc3067da": {
+  "symbol": "TTWO",
+  "name": "Take-Two Interactive Software,",
+  "icon": "https://metadata.coinbase.com/equity_icons/ab6469891e1953bb08c7576e4f7536d79bcf36d45b3893c669ada2d928e940bb.png"
+ },
+ "0xb200000000000000000000fc737aea6196ab5a4c": {
+  "symbol": "AVGO",
+  "name": "Broadcom",
+  "icon": "https://metadata.coinbase.com/equity_icons/05ae387b9635774d2724b23f7fac0bd3100fe0023f4c35587b5a28db7b8768c4.png"
+ },
+ "0xb20000000000000000000019f6e7c675b73c2e4d": {
+  "symbol": "CRCL",
+  "name": "Circle Internet Group",
+  "icon": "https://metadata.coinbase.com/equity_icons/f217835f2637739f460cc9335a59ec96011c1b9510a40cee3243aeef50eb7a45.png"
+ },
+ "0xb200000000000000000000ec3c4c7395cc609813": {
+  "symbol": "MRVL",
+  "name": "Marvell Technology,",
+  "icon": "https://metadata.coinbase.com/equity_icons/d58939c6dddb2b72c5835c3919644ce758038a1964a39777863b73be90a63891.png"
+ },
+ "0xb20000000000000000000016f9dfe862feba122b": {
+  "symbol": "BE",
+  "name": "Bloom Energy",
+  "icon": "https://metadata.coinbase.com/equity_icons/d70bb7fb735dcde077a73666df4739c3ef2c8eb23033fd6dc863f1693e5fa80b.png"
+ },
+ "0xb2000000000000000000004aff16039ba04bdfbc": {
+  "symbol": "INTC",
+  "name": "Intel",
+  "icon": "https://metadata.coinbase.com/equity_icons/cc2d84b704e34b83b5fc1f3b0e89c67e5ccc9142e666a50a5cbde261cf09e2aa.png"
+ },
+ "0xb200000000000000000000f1a0f91e34892e4718": {
+  "symbol": "LLY",
+  "name": "Eli Lilly & Co",
+  "icon": "https://metadata.coinbase.com/equity_icons/0b4d7572da33930f741d650ba269e4d324ad584b760fa3e2319b4112798168a8.png"
+ },
+ "0xb200000000000000000000e215e9b76ecba02468": {
+  "symbol": "MRNA",
+  "name": "Moderna,",
+  "icon": "https://metadata.coinbase.com/equity_icons/98d174e79a7238a1866a1f7e5d0a3a49f95e566affef238e5c5e3ab970924d7a.png"
+ },
+ "0xb200000000000000000000eda6c2c6f11e0f838f": {
+  "symbol": "LITE",
+  "name": "Lumentum Inc",
+  "icon": "https://metadata.coinbase.com/equity_icons/1a25cfcc04f5b25c746cfb8a2898efd5da0cfde2229b6753ad921905a678f662.png"
+ },
+ "0xb200000000000000000000cf36d05963a3e2205c": {
+  "symbol": "AAOI",
+  "name": "Applied Optoelectronics Inc",
+  "icon": "https://metadata.coinbase.com/equity_icons/9cc3d4c0fa410495dd450bc06e63190a21a38b7da0fc41a8ec7ae0bad8ef7585.png"
+ },
+ "0xb20000000000000000000024170488e788cbbcb4": {
+  "symbol": "BRK.B",
+  "name": "Berkshire Hathaway Class B",
+  "icon": "https://metadata.coinbase.com/equity_icons/bbc3f19dc7938d050ec626ee066c73a804097ebe8faaf9cc0151b06fc84ea467.png"
+ },
+ "0xb2000000000000000000006f944897540579d3f2": {
+  "symbol": "HOOD",
+  "name": "Robinhood Markets,",
+  "icon": "https://metadata.coinbase.com/equity_icons/82d198cb98731cba0ce74c93cbb9bf9a2788182a335de038c3b926a56f5461f1.png"
+ }
+}

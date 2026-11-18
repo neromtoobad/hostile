@@ -1,0 +1,284 @@
+import { type Address, type Log, getAddress, parseEventLogs, zeroAddress } from "viem";
+import { LeagueAbi } from "../abi/League";
+import { LeagueFactoryAbi } from "../abi/LeagueFactory";
+import { LeagueCoinsAbi } from "../abi/LeagueCoins";
+import { COINS, FACTORY, FACTORY_BLOCK, client, logsClient } from "./chain";
+import stockMeta from "../data/stocks.json";
+
+export const PHASES = ["Joining", "Drafting", "Season", "Finished"] as const;
+export type Phase = 0 | 1 | 2 | 3;
+
+const poolAbi = [
+  { type: "function", name: "slot0", stateMutability: "view", inputs: [], outputs: [{ type: "uint160" }, { type: "int24" }] },
+  {
+    type: "function", name: "observe", stateMutability: "view", inputs: [{ type: "uint32[]" }],
+    outputs: [{ type: "int56[]" }, { type: "uint160[]" }],
+  },
+] as const;
+
+export type Meta = { symbol: string; name: string; icon?: string | null };
+const META = stockMeta as Record<string, Meta>;
+export const metaOf = (token: string): Meta => META[token.toLowerCase()] ?? { symbol: short4(token), name: token };
+const short4 = (a: string) => a.slice(2, 6).toUpperCase();
+
+export type Stock = {
+  id: number;
+  token: Address;
+  pool: Address;
+  usdcIsToken0: boolean;
+  meta: Meta;
+  price?: number; // USD per share, from the Aerodrome pool's current price
+  owner?: number; // seat that drafted it
+  shares: bigint; // held by the league for the owner
+  markTick: number; // price tick at the last week boundary
+  liveTick?: number; // 30-minute TWAP tick now (same method the contract uses)
+};
+
+export type Manager = {
+  seat: number;
+  wallet: Address;
+  team: string;
+  roster: number[];
+  captain: number;
+  wins: number;
+  losses: number;
+  ties: number;
+  total: number;
+  weekScores: number[];
+  liveScore: number; // this week so far, estimated from the live TWAP; final only when settled
+  opponent?: number; // this week's opponent seat (undefined = bye)
+};
+
+export type Config = {
+  entryFee: bigint;
+  maxManagers: number;
+  rosterSize: number;
+  seasonWeeks: number;
+  weekLength: number;
+  pickWindow: number;
+  treasuryStock: number;
+};
+
+export type LeagueState = {
+  address: Address;
+  name: string;
+  commissioner: Address;
+  config: Config;
+  phase: Phase;
+  managers: Manager[];
+  draftOrder: number[];
+  pickNumber: number;
+  pickDeadline: number;
+  perPickUsdc: bigint;
+  onTheClock?: number;
+  stocks: Stock[];
+  treasuryShares: bigint;
+  seasonStart: number;
+  weeksSettled: number;
+  champion?: { seat: number; wallet: Address };
+  coin?: Address;
+  loadedAt: number;
+};
+
+const TWAP = 1800;
+
+function priceFromSqrt(sqrt: bigint, usdcIsToken0: boolean) {
+  const p = (Number(sqrt) / 2 ** 96) ** 2; // token1 per token0, raw units
+  // USDC has 6 decimals, stock tokens 8.
+  return usdcIsToken0 ? 100 / p : p * 100;
+}
+
+function twapTick(cums: readonly bigint[]) {
+  const d = cums[1] - cums[0];
+  let t = d / BigInt(TWAP);
+  if (d < 0n && d % BigInt(TWAP) !== 0n) t -= 1n;
+  return Number(t);
+}
+
+export async function loadLeague(address: Address): Promise<LeagueState> {
+  const L = { address, abi: LeagueAbi } as const;
+  const [name, commissioner, cfg, phase, managers, draftOrder, pickNumber, pickDeadline, perPickUsdc, stockCount, treasuryShares, seasonStart, weeksSettled, champion, coin] =
+    await client.multicall({
+      allowFailure: false,
+      contracts: [
+        { ...L, functionName: "name" },
+        { ...L, functionName: "commissioner" },
+        { ...L, functionName: "config" },
+        { ...L, functionName: "phase" },
+        { ...L, functionName: "managers" },
+        { ...L, functionName: "draftOrder" },
+        { ...L, functionName: "pickNumber" },
+        { ...L, functionName: "pickDeadline" },
+        { ...L, functionName: "perPickUsdc" },
+        { ...L, functionName: "stockCount" },
+        { ...L, functionName: "treasuryShares" },
+        { ...L, functionName: "seasonStart" },
+        { ...L, functionName: "weeksSettled" },
+        { ...L, functionName: "champion" },
+        { address: COINS, abi: LeagueCoinsAbi, functionName: "coinOf", args: [address] },
+      ],
+    });
+
+  const config: Config = {
+    entryFee: cfg[0], maxManagers: cfg[1], rosterSize: cfg[2], seasonWeeks: cfg[3],
+    weekLength: Number(cfg[4]), pickWindow: Number(cfg[5]), treasuryStock: cfg[6],
+  };
+  const n = managers.length;
+  const count = Number(stockCount);
+  const settled = Number(weeksSettled);
+  const ph = Number(phase) as Phase;
+  const ids = [...Array(count).keys()];
+  const seats = [...Array(n).keys()];
+
+  const perStock = await client.multicall({
+    allowFailure: false,
+    contracts: ids.flatMap((i) => [
+      { ...L, functionName: "stockAt", args: [BigInt(i)] },
+      { ...L, functionName: "ownerOf", args: [BigInt(i)] },
+      { ...L, functionName: "shares", args: [BigInt(i)] },
+      { ...L, functionName: "markTick", args: [BigInt(i)] },
+    ] as const),
+  });
+  const perSeat = await client.multicall({
+    allowFailure: false,
+    contracts: seats.flatMap((s) => [
+      { ...L, functionName: "teamName", args: [BigInt(s)] },
+      { ...L, functionName: "rosterOf", args: [BigInt(s)] },
+      { ...L, functionName: "captain", args: [BigInt(s)] },
+      { ...L, functionName: "wins", args: [BigInt(s)] },
+      { ...L, functionName: "losses", args: [BigInt(s)] },
+      { ...L, functionName: "ties", args: [BigInt(s)] },
+      { ...L, functionName: "totalScore", args: [BigInt(s)] },
+      { ...L, functionName: "opponentOf", args: [BigInt(s), BigInt(Math.min(settled, Math.max(config.seasonWeeks - 1, 0)))] },
+    ] as const),
+  });
+  const weekScores = settled
+    ? await client.multicall({
+        allowFailure: false,
+        contracts: seats.flatMap((s) => [...Array(settled).keys()].map((w) => ({ ...L, functionName: "weekScore", args: [BigInt(w), BigInt(s)] }) as const)),
+      })
+    : [];
+  const clock = ph === 1 ? await client.readContract({ ...L, functionName: "onTheClock" }) : undefined;
+
+  const stocks: Stock[] = ids.map((i) => {
+    const s = perStock[i * 4] as { token: Address; pool: Address; usdcIsToken0: boolean };
+    const own = perStock[i * 4 + 1] as readonly [boolean, bigint];
+    return {
+      id: i, token: s.token, pool: s.pool, usdcIsToken0: s.usdcIsToken0, meta: metaOf(s.token),
+      owner: own[0] ? Number(own[1]) : undefined,
+      shares: perStock[i * 4 + 2] as bigint,
+      markTick: Number(perStock[i * 4 + 3]),
+    };
+  });
+
+  // Live prices and live TWAP ticks straight from each Aerodrome pool.
+  const poolReads = await client.multicall({
+    allowFailure: true,
+    contracts: stocks.flatMap((s) => [
+      { address: s.pool, abi: poolAbi, functionName: "slot0" },
+      { address: s.pool, abi: poolAbi, functionName: "observe", args: [[TWAP, 0]] },
+    ] as const),
+  });
+  stocks.forEach((s, i) => {
+    const slot = poolReads[i * 2];
+    const obs = poolReads[i * 2 + 1];
+    if (slot.status === "success") s.price = priceFromSqrt((slot.result as readonly [bigint, number])[0], s.usdcIsToken0);
+    if (obs.status === "success") {
+      const t = twapTick((obs.result as readonly [readonly bigint[], readonly bigint[]])[0]);
+      s.liveTick = s.usdcIsToken0 ? -t : t;
+    }
+  });
+
+  const mgrs: Manager[] = seats.map((s) => {
+    const k = s * 8;
+    const roster = (perSeat[k + 1] as readonly number[]).map(Number);
+    const captain = Number(perSeat[k + 2]);
+    const opp = perSeat[k + 7] as readonly [boolean, bigint];
+    let liveScore = 0;
+    if (ph === 2) {
+      for (const id of roster) {
+        const st = stocks[id];
+        const move = st.liveTick === undefined ? 0 : st.liveTick - st.markTick;
+        liveScore += id === captain ? move * 2 : move;
+      }
+    }
+    return {
+      seat: s, wallet: managers[s], team: perSeat[k] as string, roster, captain,
+      wins: Number(perSeat[k + 3]), losses: Number(perSeat[k + 4]), ties: Number(perSeat[k + 5]),
+      total: Number(perSeat[k + 6]),
+      weekScores: [...Array(settled).keys()].map((w) => Number(weekScores[s * settled + w])),
+      liveScore, opponent: opp[0] ? Number(opp[1]) : undefined,
+    };
+  });
+
+  return {
+    address, name, commissioner, config, phase: ph, managers: mgrs,
+    draftOrder: draftOrder.map(Number), pickNumber: Number(pickNumber), pickDeadline: Number(pickDeadline),
+    perPickUsdc, onTheClock: clock === undefined ? undefined : Number(clock), stocks, treasuryShares,
+    seasonStart: Number(seasonStart), weeksSettled: settled,
+    champion: champion[0] ? { seat: Number(champion[1]), wallet: champion[2] } : undefined,
+    coin: coin === zeroAddress ? undefined : coin,
+    loadedAt: Math.floor(Date.now() / 1000),
+  };
+}
+
+export type LeagueSummary = { address: Address; name: string; phase: Phase; managers: number; maxManagers: number; entryFee: bigint; weeks: number };
+
+export async function loadLeagues(): Promise<LeagueSummary[]> {
+  const list = await client.readContract({ address: FACTORY, abi: LeagueFactoryAbi, functionName: "leagues" });
+  if (!list.length) return [];
+  const r = await client.multicall({
+    allowFailure: false,
+    contracts: list.flatMap((a) => [
+      { address: a, abi: LeagueAbi, functionName: "name" },
+      { address: a, abi: LeagueAbi, functionName: "phase" },
+      { address: a, abi: LeagueAbi, functionName: "managers" },
+      { address: a, abi: LeagueAbi, functionName: "config" },
+    ] as const),
+  });
+  return list
+    .map((a, i) => {
+      const cfg = r[i * 4 + 3] as readonly [bigint, number, number, number, number, number, number];
+      return {
+        address: a, name: r[i * 4] as string, phase: Number(r[i * 4 + 1]) as Phase,
+        managers: (r[i * 4 + 2] as readonly Address[]).length, maxManagers: cfg[1], entryFee: cfg[0], weeks: cfg[3],
+      };
+    })
+    .reverse();
+}
+
+// ───────────── activity (event logs) ─────────────
+
+const CHUNK = 49_000n;
+
+/** Finds the block a contract was created in with a binary search on eth_getCode. */
+async function creationBlock(address: Address): Promise<bigint> {
+  let lo = FACTORY_BLOCK;
+  let hi = await logsClient.getBlockNumber();
+  while (lo < hi) {
+    const mid = (lo + hi) / 2n;
+    const code = await logsClient.getCode({ address, blockNumber: mid });
+    if (code && code !== "0x") hi = mid;
+    else lo = mid + 1n;
+  }
+  return lo;
+}
+
+export type Activity = { kind: string; block: bigint; tx: `0x${string}`; args: Record<string, unknown> };
+
+export async function loadActivity(address: Address): Promise<Activity[]> {
+  const from = await creationBlock(address);
+  const head = await logsClient.getBlockNumber();
+  const ranges: [bigint, bigint][] = [];
+  for (let b = from; b <= head; b += CHUNK) ranges.push([b, b + CHUNK - 1n > head ? head : b + CHUNK - 1n]);
+  const logs: Log[] = [];
+  for (let i = 0; i < ranges.length; i += 4) {
+    const batch = await Promise.all(ranges.slice(i, i + 4).map(([a, b]) => logsClient.getLogs({ address, fromBlock: a, toBlock: b })));
+    batch.forEach((l) => logs.push(...l));
+  }
+  return parseEventLogs({ abi: LeagueAbi, logs }).map((e) => ({
+    kind: e.eventName, block: e.blockNumber!, tx: e.transactionHash!, args: e.args as Record<string, unknown>,
+  }));
+}
+
+export const sameAddr = (a?: string, b?: string) => !!a && !!b && getAddress(a) === getAddress(b);
