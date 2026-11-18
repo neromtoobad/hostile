@@ -42,7 +42,9 @@ No league has been played on mainnet yet (see [Not built yet](#not-built-yet)).
 | After the season, coin fees go straight to the champion | `contracts/src/LeagueCoins.sol:114` | test `test_champion_takes_the_whole_treasury_and_later_fees_go_straight_to_them` |
 | The app reads every league, price and score from Base; nothing is stored off-chain | `web/src/lib/league.ts:99` `loadLeague` | open any page; the RPC calls are in the network tab |
 | Live scores in the app use the same 30-minute pool TWAP as the contract, labelled as estimates until settled | `web/src/lib/league.ts:180`, `web/src/pages/League.tsx:281` | compare with `weekScore` after `settleWeek` |
-| Each button sends one real transaction and links it on BaseScan | `web/src/components/Tx.tsx:17`, `:61` | any join, pick or settle |
+| Each button sends one real transaction and links it on BaseScan | `web/src/components/Tx.tsx:18`, `:62` | any join, pick or settle |
+| A keeper script finds leagues with an expired pick clock or an ended week and calls `autopick` / `settleWeek` for them, after asking the node whether the call would succeed | `tools/keeper.mjs:62` `dueAction`, `:81` `act` | `cd tools && npm test`; `node tools/keeper.mjs --once` (watch-only without a key) |
+| App transactions carry a Base Builder Code as an ERC-8021 data suffix when `VITE_BUILDER_CODE` is set | `web/src/lib/builder.ts:7`, `web/src/components/Tx.tsx:49` | the suffix for Base's documented example code matches byte for byte |
 | US visitors get a notice instead of the app | `web/middleware.js:5` | open the site from a US IP: HTTP 451 |
 
 ## Judging criteria
@@ -65,6 +67,8 @@ The [official rules](https://www.base.org/stocksmaxxing/rules) say judges score 
 | LeagueFactory (25 stocks) and LeagueCoins | **live on Base mainnet**, source verified (Sourcify exact match). No league created yet | [factory deploy tx](https://basescan.org/tx/0xa60e7451335d386f5b2fa089c7af5a873fb7dcd9d4f24835794a200cf9532674) · [LeagueCoins deploy tx](https://basescan.org/tx/0xa6fdf361ac0b51bcc95731629159b87f1ee78f450ef5af652074ec71779d21cb) |
 | Web app | **live** at [hostile.nerom.site](https://hostile.nerom.site) (Vercel), reads Base mainnet directly: no backend, no database. Home, lobby, join and draft room checked; the season and final screens have not run with a real league yet | `web/src/lib/league.ts` |
 | Buying stocks, reading TWAPs, moving shares, launching and harvesting a league coin on Stonks Exchange | run against **real Base mainnet state and the real Stonks Exchange contracts** with `eth_simulateV1` (no money moved) | `tools/live-dry-run.mjs`, `evidence/` |
+| Keeper (`tools/keeper.mjs`) | **written and tested, not running yet.** A watch-only pass against Base mainnet works, and on a local fork it spots a league whose pick clock ran out. It has not sent a mainnet transaction: that needs a funded wallet and a real league | `tools/keeper.test.mjs` |
+| Builder Code | **wired, off.** No code is registered yet, so today's transactions carry no suffix | `web/src/lib/builder.ts` |
 | Test mocks | **simulated**: `contracts/test/mocks/` replace the stock tokens, pools and Stonks Exchange in unit tests, because Coinbase's B20 tokens are precompiles that a local fork can't run | the dry run covers the real contracts instead |
 | `SimWhale` | **dry-run only**, never deployed: an outside trader that moves one price and trades the league coin inside the simulation | `contracts/script/SimWhale.sol` |
 | Stock mascots | **AI-generated art** (Higgsfield), one per stock; the mood comes from real price moves | `web/public/mascots/CREDITS.md`, `web/src/components/Mascot.tsx` |
@@ -124,6 +128,7 @@ Fantasy stock games run on paper points, so losing costs nothing and winning pay
 - **Draft order** is shuffled with Base's `prevrandao`. On an L2 the sequencer could influence that.
 - **Coinbase controls each stock's transfer policy.** Today all 28 liquid stocks use policy 5, a blocklist, and contracts are allowed. If Coinbase blocks a wallet, that wallet's shares wait in the league and can be claimed to another wallet. If Coinbase blocks the league contract itself, its shares are stuck until Coinbase unblocks it. We can't prevent that.
 - **US users** are not allowed to trade under the event rules. The app's edge middleware blocks US visitors (`web/middleware.js`). The contracts themselves are open, like any contract on Base.
+- **The keeper has no special rights.** It calls `autopick` and `settleWeek`, which anyone can call, and its wallet only pays gas. If it stops, any player can press the same buttons in the app.
 - **League coins rely on Stonks Exchange.**
   - The coin's liquidity is locked for good in Stonks' locker, which can't be upgraded.
   - Stonks keeps 25–30% of trading fees (set per tier when the coin launches).
@@ -135,8 +140,8 @@ Fantasy stock games run on paper points, so losing costs nothing and winning pay
 - The first real league on mainnet (the contracts are live; no league has been played yet).
 - The demo video and the X post.
 - Share cards for X.
-- Keeper that settles weeks and autopicks (today anyone can call `settleWeek` and `autopick`).
-- Builder Code attribution on the app's transactions.
+- The keeper running as a hosted service. The script exists (`tools/keeper.mjs`) but is not deployed, so today a player has to press "Settle the week" or "Autopick for them".
+- A registered Builder Code. The app is ready to send it (`VITE_BUILDER_CODE`); none is set.
 - Trades between managers, Weekend Cup, an AI rival manager, yield on held stocks (Aave V4).
 
 ## Why these choices
@@ -155,6 +160,13 @@ cd contracts && forge test                     # unit tests
 forge build && cd ../tools && npm ci && cd ..
 node tools/live-dry-run.mjs                    # full season on real Base state, free
 cd web && npm ci && npm run dev                # the app, against Base mainnet
+```
+
+Keeper (settles ended weeks and autopicks expired clocks; watch-only unless `KEEPER_KEY` is set):
+
+```bash
+cd tools && npm test                           # timing rules
+node keeper.mjs --once                         # one pass over every league, sends nothing without a key
 ```
 
 To try the app with no real money, run `anvil --fork-url https://mainnet.base.org --port 8547` and start the app with `VITE_RPC=http://127.0.0.1:8547 npm run dev`. It shows a "local fork" banner. Draft picks can't run on a fork, because B20 stock tokens are precompiles.
