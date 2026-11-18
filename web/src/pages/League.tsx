@@ -10,6 +10,7 @@ import { type Activity, type LeagueState, type Manager, PHASES, loadActivity, lo
 import { money, shares, short, tickPct, usd, weekLengthLabel } from "../lib/format";
 import { TxButton } from "../components/Tx";
 import { Countdown, StockIcon, StockTag } from "../components/Stock";
+import { Manager as MgrFig, poseFor } from "../components/Cast";
 
 function useNow() {
   const [now, setNow] = useState(Math.floor(Date.now() / 1000));
@@ -25,7 +26,7 @@ export function LeaguePage() {
   const address = raw && isAddress(raw) ? getAddress(raw) : undefined;
   const qc = useQueryClient();
   const league = useQuery({ queryKey: ["league", address], queryFn: () => loadLeague(address!), enabled: !!address, refetchInterval: 8000 });
-  const activity = useQuery({ queryKey: ["activity", address], queryFn: () => loadActivity(address!), enabled: !!address, refetchInterval: 30_000 });
+  const activity = useQuery({ queryKey: ["activity", address], queryFn: () => loadActivity(address!), enabled: !!address && !!league.data, refetchInterval: 30_000 });
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["league", address] });
     qc.invalidateQueries({ queryKey: ["activity", address] });
@@ -112,7 +113,8 @@ function Lobby({ L, me, mySeat, refresh }: { L: LeagueState; me?: Address; mySea
           const m = L.managers[s];
           return (
             <div key={s} className={`seat ${m ? "taken" : ""} ${m && sameAddr(m.wallet, me) ? "mine" : ""}`}>
-              {m ? (<><b>{m.team}</b><span className="muted">{short(m.wallet)}{sameAddr(m.wallet, L.commissioner) ? " · commissioner" : ""}</span></>) : <span className="muted">Open seat</span>}
+              <div className="seat-stage">{m ? <MgrFig seat={s} height={150} /> : <MgrFig seat={s} height={150} className="ghost" />}</div>
+              {m ? (<><b>{m.team}</b><span className="muted">{short(m.wallet)}{sameAddr(m.wallet, L.commissioner) ? " · commissioner" : ""}</span></>) : <><b className="muted">Open seat</b><span className="muted">{usd(L.config.entryFee)} to take it</span></>}
             </div>
           );
         })}
@@ -169,7 +171,8 @@ function DraftRoom({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: numbe
   return (
     <section className="block">
       <div className={`clock-banner ${myTurn ? "mine" : ""}`}>
-        <div>
+        <MgrFig seat={clock} height={128} className="clock-fig" />
+        <div className="clock-copy">
           <span className="muted">Pick {L.pickNumber + 1} of {total}</span>
           <h2 className="display-sm">{myTurn ? "You're on the clock" : `${onClock.team} is picking`}</h2>
         </div>
@@ -278,8 +281,9 @@ function Season({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: number; 
 }
 
 function Matchup({ L, a, b, mySeat }: { L: LeagueState; a: Manager; b?: Manager; mySeat?: number }) {
-  const side = (m: Manager, lead: boolean) => (
+  const side = (m: Manager, lead: boolean, rival?: Manager) => (
     <div className={`side ${lead ? "lead" : ""} ${m.seat === mySeat ? "me" : ""}`}>
+      <MgrFig seat={m.seat} pose={poseFor(m.liveScore, rival?.liveScore)} />
       <div className="side-head">
         <b>{m.team}</b>
         <span className="muted">{m.wins}-{m.losses}{m.ties ? `-${m.ties}` : ""}</span>
@@ -302,9 +306,9 @@ function Matchup({ L, a, b, mySeat }: { L: LeagueState; a: Manager; b?: Manager;
   if (!b) return <div className="matchup bye">{side(a, false)}<div className="vs">bye week</div></div>;
   return (
     <div className="matchup">
-      {side(a, a.liveScore > b.liveScore)}
+      {side(a, a.liveScore > b.liveScore, b)}
       <div className="vs">vs</div>
-      {side(b, b.liveScore > a.liveScore)}
+      {side(b, b.liveScore > a.liveScore, a)}
     </div>
   );
 }
@@ -319,7 +323,7 @@ function Standings({ L }: { L: LeagueState }) {
         <tbody>
           {rows.map((m) => (
             <tr key={m.seat}>
-              <td><b>{m.team}</b></td>
+              <td className="st-team"><MgrFig seat={m.seat} pose={L.phase === 3 && L.champion?.seat === m.seat ? "champ" : "ready"} height={40} /><b>{m.team}</b></td>
               <td>{m.wins}</td><td>{m.losses}</td><td>{m.ties}</td>
               <td className={m.total >= 0 ? "up" : "down"}>{tickPct(m.total)}</td>
               <td>{money(bagValue(L, m))}</td>
@@ -367,7 +371,8 @@ function Final({ L }: { L: LeagueState }) {
     <section className="block">
       {champ && (
         <div className="champion">
-          <span className="muted">Champion</span>
+          <MgrFig seat={champ.seat} pose="champ" height={220} className="champ-fig" />
+          <span className="kicker kicker-on-blue">Champion</span>
           <h2 className="display">{champ.team}</h2>
           <p>{champ.wins} wins · took the treasury · {short(champ.wallet)}</p>
         </div>

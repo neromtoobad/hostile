@@ -7,6 +7,7 @@ import { FACTORY } from "../lib/chain";
 import { metaOf } from "../lib/league";
 import { TxButton } from "../components/Tx";
 import { StockIcon } from "../components/Stock";
+import { Manager } from "../components/Cast";
 
 const WEEK_OPTIONS = [
   { label: "1 hour (quick test)", s: 3600 },
@@ -43,7 +44,8 @@ export function CreateLeague() {
 
   return (
     <section className="block narrow">
-      <h1 className="display-sm">Start a league</h1>
+      <span className="kicker">New league</span>
+      <h1 className="display-md">Start a league</h1>
       <p className="muted">You become the commissioner: you share the link and start the draft. You can't touch anyone's money.</p>
 
       <div className="form">
@@ -72,6 +74,9 @@ export function CreateLeague() {
               {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
           </label>
+        </div>
+        <div className="lineup-preview" title="Each seat plays as one of the four managers">
+          {[...Array(players).keys()].map((i) => <Manager key={i} seat={i} height={players > 6 ? 70 : 88} />)}
         </div>
         {tooMany && <p className="tx-error">{players} players × {roster} stocks is more than the {tokens.length} stocks you can draft.</p>}
 
