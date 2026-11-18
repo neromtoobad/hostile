@@ -6,11 +6,12 @@ import { type Address, erc20Abi, getAddress, isAddress } from "viem";
 import { LeagueAbi } from "../abi/League";
 import { LeagueCoinsAbi } from "../abi/LeagueCoins";
 import { COINS, STONKS_COIN_URL, USDC, basescan } from "../lib/chain";
-import { type Activity, type LeagueState, type Manager, PHASES, loadActivity, loadLeague, sameAddr } from "../lib/league";
+import { type Activity, type LeagueState, type Manager, type Stock, PHASES, loadActivity, loadLeague, sameAddr, withQueuedCaptains } from "../lib/league";
 import { money, shares, short, tickPct, usd, weekLengthLabel } from "../lib/format";
 import { TxButton } from "../components/Tx";
-import { Countdown, StockIcon, StockTag } from "../components/Stock";
-import { Mascot, moodFor, seatFace, teamFace } from "../components/Mascot";
+import { Countdown, StockIcon } from "../components/Stock";
+import { Mascot, moodOf, seatFace, teamFace } from "../components/Mascot";
+import { Lines, Lineup, type Slot } from "../components/Pitch";
 import { at } from "../components/Reveal";
 
 function useNow() {
@@ -39,7 +40,8 @@ export function LeaguePage() {
   if (league.isLoading) return <p className="muted">Reading the league from Base…</p>;
   if (league.error || !league.data) return <p className="tx-error">Could not load this league: {(league.error as Error)?.message}</p>;
 
-  const L = league.data;
+  // Season captain changes wait for their week; the events say which one the contract will score.
+  const L = withQueuedCaptains(league.data, activity.data);
   const mySeat = L.managers.find((m) => sameAddr(m.wallet, me))?.seat;
 
   return (
@@ -196,6 +198,9 @@ function DraftRoom({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: numbe
         ))}
       </div>
 
+      <div className={`draft-grid ${mySeat !== undefined ? "with-team" : ""}`}>
+      {mySeat !== undefined && <aside className="draft-side"><MyTeam L={L} seat={mySeat} refresh={refresh} /></aside>}
+      <div className="draft-main">
       <input className="search" placeholder="Find a stock" value={filter} onChange={(e) => setFilter(e.target.value)} />
       <div className="board">
         {list.map((s) => {
@@ -230,8 +235,8 @@ function DraftRoom({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: numbe
           );
         })}
       </div>
-
-      {mySeat !== undefined && <MyTeam L={L} seat={mySeat} refresh={refresh} />}
+      </div>
+      </div>
     </section>
   );
 }
@@ -257,8 +262,9 @@ function Season({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: number; 
       if (m.opponent !== undefined) seen.add(m.opponent);
       out.push([m, m.opponent !== undefined ? L.managers[m.opponent] : undefined]);
     }
-    return out;
-  }, [L]);
+    // Your own match comes first.
+    return out.sort(([a, b], [c, d]) => Number(c.seat === mySeat || d?.seat === mySeat) - Number(a.seat === mySeat || b?.seat === mySeat));
+  }, [L, mySeat]);
 
   return (
     <section className="block">
@@ -278,42 +284,58 @@ function Season({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: number; 
         {pairs.map(([a, b]) => <Matchup key={a.seat} L={L} a={a} b={b} mySeat={mySeat} />)}
       </div>
 
-      <Standings L={L} />
-      {mySeat !== undefined && <MyTeam L={L} seat={mySeat} refresh={refresh} />}
+      <div className={`season-cols ${mySeat !== undefined ? "with-team" : ""}`}>
+        {mySeat !== undefined && <MyTeam L={L} seat={mySeat} refresh={refresh} />}
+        <Standings L={L} />
+      </div>
     </section>
   );
 }
 
+/** This week's stock move since the week mark, in ticks (+100 ≈ +1%). */
+const weekMove = (s: Stock) => (s.liveTick === undefined ? 0 : s.liveTick - s.markTick);
+
+/** One match on one pitch: the rival's stocks in the top half, yours (or the first team) in the
+ *  bottom half, each with its move this week. The captain wears the armband and counts twice. */
 function Matchup({ L, a, b, mySeat }: { L: LeagueState; a: Manager; b?: Manager; mySeat?: number }) {
-  const side = (m: Manager, lead: boolean, rival?: Manager) => (
-    <div className={`side ${lead ? "lead" : ""} ${m.seat === mySeat ? "me" : ""}`}>
-      <Mascot symbol={teamFace(L, m)} mood={moodFor(m.liveScore, rival?.liveScore)} height={150} />
-      <div className="side-head">
-        <b>{m.team}</b>
-        <span className="muted">{m.wins}-{m.losses}{m.ties ? `-${m.ties}` : ""}</span>
+  const [bottom, top] = b && b.seat === mySeat ? [b, a] : [a, b];
+  const slots = (m: Manager): Slot[] =>
+    m.roster.map((id) => {
+      const s = L.stocks[id];
+      const mv = weekMove(s);
+      return {
+        key: id, symbol: s.meta.symbol, mood: moodOf(mv), captain: id === m.captain, name: s.meta.symbol,
+        sub: id === m.captain ? `${tickPct(mv)} ×2` : tickPct(mv), tone: mv >= 0 ? "up" : "down", title: s.meta.name,
+      };
+    });
+  const bar = (m: Manager, rival: Manager | undefined, end: "top" | "bottom") => (
+    <div className={`team-bar ${end} ${rival && m.liveScore > rival.liveScore ? "lead" : ""}`}>
+      <div>
+        <b>{m.team}{m.seat === mySeat && <span className="you">You</span>}</b>
+        <span className="muted">{m.wins}-{m.losses}{m.ties ? `-${m.ties}` : ""}{rival && m.liveScore > rival.liveScore ? " · winning" : ""}</span>
       </div>
-      <div className={`score ${m.liveScore >= 0 ? "up" : "down"}`}>{tickPct(m.liveScore)}</div>
-      <div className="side-stocks">
-        {m.roster.map((id) => {
-          const s = L.stocks[id];
-          const mv = s.liveTick === undefined ? 0 : s.liveTick - s.markTick;
-          return (
-            <div key={id} className="ss">
-              <StockTag meta={s.meta} captain={id === m.captain} />
-              <span className={mv >= 0 ? "up" : "down"}>{tickPct(mv)}</span>
-            </div>
-          );
-        })}
-      </div>
+      <span className={`tb-score ${m.liveScore >= 0 ? "up" : "down"}`}>{tickPct(m.liveScore)}</span>
     </div>
   );
-  if (!b) return <div className="matchup bye">{side(a, false)}<div className="vs">bye week</div></div>;
+  const mine = a.seat === mySeat || b?.seat === mySeat;
   return (
-    <div className="matchup">
-      {side(a, a.liveScore > b.liveScore, b)}
-      <div className="vs">vs</div>
-      {side(b, b.liveScore > a.liveScore, a)}
-    </div>
+    <article className={`mpitch ${mine ? "me" : ""}`}>
+      {top ? bar(top, bottom, "top") : <div className="team-bar top"><div><b>Bye week</b><span className="muted">An odd number of teams, so one sits out. No shares move.</span></div></div>}
+      {top ? (
+        <div className="pitch-box full">
+          <Lines variant="full" />
+          <Lineup slots={slots(top)} facing="down" />
+          <div className="halfway"><span>vs</span></div>
+          <Lineup slots={slots(bottom)} facing="up" />
+        </div>
+      ) : (
+        <div className="pitch-box half">
+          <Lines variant="half" />
+          <Lineup slots={slots(bottom)} facing="up" />
+        </div>
+      )}
+      {bar(bottom, top, "bottom")}
+    </article>
   );
 }
 
@@ -341,28 +363,73 @@ function Standings({ L }: { L: LeagueState }) {
 
 const bagValue = (L: LeagueState, m: Manager) => m.roster.reduce((sum, id) => sum + (Number(L.stocks[id].shares) / 1e8) * (L.stocks[id].price ?? 0), 0);
 
+/** Your squad on a half pitch. Tap a player to see its shares and make it captain (one real
+ *  setCaptain transaction). During the draft, empty shirts stand where your next picks will go. */
 function MyTeam({ L, seat, refresh }: { L: LeagueState; seat: number; refresh: () => void }) {
   const m = L.managers[seat];
-  if (!m.roster.length) return null;
+  const [sel, setSel] = useState<number>();
+  const season = L.phase === 2;
+  const myPicks = snake(L).flatMap((s, i) => (s === seat ? [i] : []));
+  const empty = L.phase === 1 ? Math.max(L.config.rosterSize - m.roster.length, 0) : 0;
+  if (!m.roster.length && !empty) return null;
+
+  const valueOf = (s: Stock) => (Number(s.shares) / 1e8) * (s.price ?? 0);
+  const slots: Slot[] = m.roster.map((id) => {
+    const s = L.stocks[id];
+    const mv = weekMove(s);
+    return {
+      key: id, symbol: s.meta.symbol, mood: season ? moodOf(mv) : "ready",
+      captain: id === m.captain, nextCaptain: id === m.nextCaptain, name: s.meta.symbol,
+      sub: season ? tickPct(mv) : money(valueOf(s)), tone: season ? (mv >= 0 ? "up" : "down") : undefined,
+      selected: sel === id, onClick: () => setSel(sel === id ? undefined : id), title: `${s.meta.name}: tap for details`,
+    };
+  });
+  for (let k = 0; k < empty; k++) {
+    const pick = myPicks[m.roster.length + k];
+    slots.push({ key: `empty-${k}`, name: pick === undefined ? "Open" : `Pick ${pick + 1}`, sub: pick === L.pickNumber ? "on the clock" : "to come" });
+  }
+
+  const picked = sel !== undefined && m.roster.includes(sel) ? L.stocks[sel] : undefined;
   return (
     <div className="my-team">
-      <h3>Your team · {m.team}</h3>
-      <p className="muted small">{L.phase === 2 ? "A new captain starts counting next week, so nobody can pick one after seeing prices." : "Your captain counts double. Your first pick is captain until you change it."}</p>
-      <div className="my-stocks">
-        {m.roster.map((id) => {
-          const s = L.stocks[id];
-          return (
-            <div key={id} className="my-stock">
-              <StockTag meta={s.meta} captain={id === m.captain} />
-              <span>{shares(s.shares)} sh · {money((Number(s.shares) / 1e8) * (s.price ?? 0))}</span>
-              {id !== m.captain && (
-                <TxButton label="Make captain" kind="ghost" request={() => ({ address: L.address, abi: LeagueAbi, functionName: "setCaptain", args: [BigInt(id)] })} onDone={refresh} />
-              )}
-            </div>
-          );
-        })}
+      <div className="mt-head">
+        <div><span className="muted">Your team</span><b>{m.team}</b></div>
+        <div className="mt-bag"><span className="muted">Bag now</span><b>{money(bagValue(L, m))}</b></div>
       </div>
-      <p className="muted small">Bag value: {money(bagValue(L, m))}</p>
+      <div className="pitch-box half">
+        <Lines variant="half" />
+        <Lineup slots={slots} facing="up" />
+      </div>
+      {picked ? (
+        <div className="pp-detail">
+          <div className="pp-detail-top">
+            <StockIcon meta={picked.meta} size={34} />
+            <div><b>{picked.meta.symbol}</b><span className="muted">{picked.meta.name}</span></div>
+            <button className="pp-close" onClick={() => setSel(undefined)} aria-label="Close">×</button>
+          </div>
+          <div className="pp-facts">
+            <span><span className="muted">Shares</span><b>{shares(picked.shares)}</b></span>
+            <span><span className="muted">Worth</span><b>{money(valueOf(picked))}</b></span>
+            {season && <span><span className="muted">This week</span><b className={weekMove(picked) >= 0 ? "up" : "down"}>{tickPct(weekMove(picked))}</b></span>}
+          </div>
+          {picked.id === m.captain && !m.nextCaptain ? (
+            <p className="muted small">Your captain. It counts double.</p>
+          ) : picked.id === m.nextCaptain ? (
+            <p className="muted small">Captain from next week.</p>
+          ) : (
+            <TxButton
+              label={season ? `Make ${picked.meta.symbol} captain from next week` : `Make ${picked.meta.symbol} captain`}
+              request={() => ({ address: L.address, abi: LeagueAbi, functionName: "setCaptain", args: [BigInt(picked.id)] })}
+              onDone={refresh}
+            />
+          )}
+        </div>
+      ) : (
+        <p className="muted small mt-hint">
+          {m.roster.length ? "Tap a player to see its shares or make it captain. " : ""}
+          {season ? "A new captain starts counting next week, so nobody can pick one after seeing prices." : "Your captain counts double. Your first pick is captain until you change it."}
+        </p>
+      )}
     </div>
   );
 }
