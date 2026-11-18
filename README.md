@@ -1,7 +1,7 @@
 # Hostile — a fantasy stock league where every pick is a real share, and the loser hands 10% to the winner
 
 **Contracts (Base mainnet, source verified):** [LeagueFactory `0xde8b…e997`](https://basescan.org/address/0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997) · [LeagueCoins `0xf84A…70D6`](https://basescan.org/address/0xf84A05F17545f52914c82eB89b8aDb52e02770D6) ([Sourcify](https://repo.sourcify.dev/8453/0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997), [deploy record](evidence/deployments.base.json))
-**App:** in [`web/`](web/), not deployed yet · **Video:** not recorded yet · **Built at:** Base Stocks Maxxing Season, Nov 5 – Dec 5 2026 (Track 1: Meme & Community Economies)
+**App:** live at [hostile.nerom.site](https://hostile.nerom.site) (source in [`web/`](web/); blocked for US visitors) · **Video:** not recorded yet · **Built at:** Base Stocks Maxxing Season, Nov 5 – Dec 5 2026 (Track 1: Meme & Community Economies)
 
 **Proof so far:** a whole season played against real Base mainnet state at block 58992480, with no money spent ([evidence/dry-run-58992480.json](evidence/dry-run-58992480.json)). In it:
 - 8 draft picks bought real Coinbase stock tokens on Aerodrome.
