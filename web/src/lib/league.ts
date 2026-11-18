@@ -282,3 +282,39 @@ export async function loadActivity(address: Address): Promise<Activity[]> {
 }
 
 export const sameAddr = (a?: string, b?: string) => !!a && !!b && getAddress(a) === getAddress(b);
+
+// ───────────── home page: live board straight from the factory's stock list ─────────────
+
+const token0Abi = [{ type: "function", name: "token0", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] }] as const;
+
+export type BoardRow = { token: Address; meta: Meta; price?: number };
+export type Board = { rows: BoardRow[]; stockCount: number; leagueCount: number };
+
+/** Reads the factory's draftable stocks and each one's current price from its Aerodrome pool. */
+export async function loadBoard(): Promise<Board> {
+  const [[tokens, pools], leagueCount] = await client.multicall({
+    allowFailure: false,
+    contracts: [
+      { address: FACTORY, abi: LeagueFactoryAbi, functionName: "stocks" },
+      { address: FACTORY, abi: LeagueFactoryAbi, functionName: "leagueCount" },
+    ],
+  });
+  const reads = await client.multicall({
+    allowFailure: true,
+    contracts: pools.flatMap((p) => [
+      { address: p, abi: token0Abi, functionName: "token0" },
+      { address: p, abi: poolAbi, functionName: "slot0" },
+    ] as const),
+  });
+  const rows = tokens.map((t, i) => {
+    const t0 = reads[i * 2];
+    const s0 = reads[i * 2 + 1];
+    let price: number | undefined;
+    if (t0.status === "success" && s0.status === "success") {
+      const usdcIsToken0 = getAddress(t0.result as Address) !== getAddress(t);
+      price = priceFromSqrt((s0.result as readonly [bigint, number])[0], usdcIsToken0);
+    }
+    return { token: t, meta: metaOf(t), price };
+  });
+  return { rows, stockCount: tokens.length, leagueCount: Number(leagueCount) };
+}
