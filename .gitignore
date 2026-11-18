@@ -11,3 +11,5 @@ JUDGE-SELF.md
 web/dist/
 .claude/
 .vercel
+*.tsbuildinfo
+art/
