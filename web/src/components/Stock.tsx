@@ -1,10 +1,13 @@
+import { useState } from "react";
 import type { Meta } from "../lib/league";
 
 export function StockIcon({ meta, size = 28 }: { meta: Meta; size?: number }) {
-  return meta.icon ? (
-    <img className="stock-icon" src={meta.icon} alt="" width={size} height={size} loading="lazy" />
+  // The icons are hosted by Coinbase; if that host is down, show the letter badge instead.
+  const [broken, setBroken] = useState(false);
+  return meta.icon && !broken ? (
+    <img className="stock-icon" src={meta.icon} alt="" width={size} height={size} loading="lazy" onError={() => setBroken(true)} />
   ) : (
-    <span className="stock-icon stock-icon-fallback" style={{ width: size, height: size }}>{meta.symbol[0]}</span>
+    <span className="stock-icon stock-icon-fallback" style={{ width: size, height: size, fontSize: Math.round(size * 0.42) }}>{meta.symbol[0]}</span>
   );
 }
 
