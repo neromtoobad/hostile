@@ -1,7 +1,7 @@
 # Hostile — a fantasy stock league where every pick is a real share, and the loser hands 10% to the winner
 
 **Contracts (Base mainnet, source verified):** [LeagueFactory `0xde8b…e997`](https://basescan.org/address/0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997) · [LeagueCoins `0xf84A…70D6`](https://basescan.org/address/0xf84A05F17545f52914c82eB89b8aDb52e02770D6) ([Sourcify](https://repo.sourcify.dev/8453/0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997), [deploy record](evidence/deployments.base.json))
-**App:** not built yet · **Video:** not recorded yet · **Built at:** Base Stocks Maxxing Season, Nov 5 – Dec 5 2026 (Track 1: Meme & Community Economies)
+**App:** in [`web/`](web/), not deployed yet · **Video:** not recorded yet · **Built at:** Base Stocks Maxxing Season, Nov 5 – Dec 5 2026 (Track 1: Meme & Community Economies)
 
 **Proof so far:** a whole season played against real Base mainnet state at block 58992480, with no money spent ([evidence/dry-run-58992480.json](evidence/dry-run-58992480.json)). In it:
 - 8 draft picks bought real Coinbase stock tokens on Aerodrome.
@@ -57,6 +57,9 @@
 | A commissioner launches the league coin on Stonks Exchange, priced in the treasury stock, with `LeagueCoins` as fee owner | `contracts/src/LeagueCoins.sol:54`, `:79` | test `test_commissioner_launches_coin_priced_in_treasury_stock`, dry run "League coin" |
 | Coin fees: the stock side goes into the league treasury, the coin side is burned | `contracts/src/LeagueCoins.sol:89`, `:104`, `:111` → `contracts/src/League.sol:299` | test `test_harvest_adds_stock_fees_to_treasury_and_burns_coin_fees`, dry run treasury 0.0125 → 0.1000 NVDA |
 | After the season, coin fees go straight to the champion | `contracts/src/LeagueCoins.sol:89` | test `test_champion_takes_the_whole_treasury_and_later_fees_go_straight_to_them` |
+| The app reads every league, price and score from Base; nothing is stored off-chain | `web/src/lib/league.ts:98` `loadLeague` | open any league page; the RPC calls are in the network tab |
+| Live scores in the app use the same 30-minute pool TWAP as the contract, labelled as estimates until settled | `web/src/lib/league.ts:174`, `web/src/pages/League.tsx` `Season` | compare with `weekScore` after `settleWeek` |
+| Each button sends one real transaction and links it on BaseScan | `web/src/components/Tx.tsx:17` | any join, pick or settle |
 
 ## What's real
 
@@ -66,7 +69,7 @@
 | Buying stocks, reading TWAPs, moving shares, launching and harvesting a league coin on Stonks Exchange | run against **real Base mainnet state and the real Stonks Exchange contracts** in a simulation (no money moved) | `tools/live-dry-run.mjs`, `evidence/` |
 | Test mocks | **simulated**: `contracts/test/mocks/` replace the stock tokens, pools and Stonks Exchange in unit tests, because Coinbase's B20 tokens are precompiles that a local fork can't run | the dry run covers the real contracts instead |
 | `SimWhale` | **dry-run only**, never deployed: an outside trader that moves one price and trades the league coin inside the simulation | `contracts/script/SimWhale.sol` |
-| Web app | not built yet | — |
+| Web app (`web/`) | **built**, reads Base mainnet directly (no backend, no database). Lobby, join and draft room checked against a local fork of Base; season and final screens not yet exercised with a real league | `web/src/lib/league.ts`, `web/DESIGN.md` |
 
 ## Trust model
 
@@ -75,7 +78,7 @@
 - **The factory owner** can only change the stock list for *future* leagues. Each league copies the list when it is created.
 - **Draft order** is shuffled with Base's `prevrandao`. On an L2 the sequencer could influence that.
 - **Coinbase controls each stock's transfer policy.** Today all 28 liquid stocks use policy 5, a blocklist, and contracts are allowed. If Coinbase blocks a wallet, that wallet's shares wait in the league and can be claimed to another wallet. If Coinbase blocks the league contract itself, its shares are stuck until Coinbase unblocks it. We can't prevent that.
-- **US users** are not allowed to trade under the event rules. The app will block US visitors.
+- **US users** are not allowed to trade under the event rules. The app's edge middleware blocks US visitors (`web/middleware.js`); it takes effect once the app is deployed on Vercel.
 - **League coins rely on Stonks Exchange.**
   - The coin's liquidity is locked for good in Stonks' locker, which can't be upgraded.
   - Stonks keeps 25–30% of trading fees (set per tier when the coin launches).
@@ -85,7 +88,7 @@
 ## Not built yet
 
 - The first real league on mainnet (the contracts are live; no league has been played yet).
-- The web app: league lobby, live draft room, matchup screen, share cards.
+- Deploying the web app (it runs locally today) and share cards for X.
 - Keeper that settles weeks and autopicks.
 - Trades between managers, Weekend Cup, an AI rival manager, yield on held stocks (Aave V4).
 
@@ -104,7 +107,10 @@ git clone --recursive <repo> && cd hostile
 cd contracts && forge test                     # unit tests
 forge build && cd ../tools && npm ci && cd ..
 node tools/live-dry-run.mjs                    # full season on real Base state, free
+cd web && npm ci && npm run dev                # the app, against Base mainnet
 ```
+
+To try the app with no real money, run `anvil --fork-url https://mainnet.base.org --port 8547` and start the app with `VITE_RPC=http://127.0.0.1:8547 npm run dev`. It shows a "local fork" banner. Draft picks can't run on a fork, because B20 stock tokens are precompiles.
 
 Deploy (needs a little ETH on Base in the `.env` wallet):
 
