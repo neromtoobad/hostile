@@ -1,6 +1,7 @@
 # Hostile — a fantasy stock league where every pick is a real share, and the loser hands 10% to the winner
 
-**Live:** not deployed yet · **Video:** not recorded yet · **Built at:** Base Stocks Maxxing Season, Nov 5 – Dec 5 2026 (Track 1: Meme & Community Economies)
+**Contracts (Base mainnet, source verified):** [LeagueFactory `0xde8b…e997`](https://basescan.org/address/0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997) · [LeagueCoins `0xf84A…70D6`](https://basescan.org/address/0xf84A05F17545f52914c82eB89b8aDb52e02770D6) ([Sourcify](https://repo.sourcify.dev/8453/0xde8bEbCeeAC160DeC0C09C2286a1d29a564ee997), [deploy record](evidence/deployments.base.json))
+**App:** not built yet · **Video:** not recorded yet · **Built at:** Base Stocks Maxxing Season, Nov 5 – Dec 5 2026 (Track 1: Meme & Community Economies)
 
 **Proof so far:** a whole season played against real Base mainnet state at block 58992480, with no money spent ([evidence/dry-run-58992480.json](evidence/dry-run-58992480.json)). In it:
 - 8 draft picks bought real Coinbase stock tokens on Aerodrome.
@@ -61,7 +62,7 @@
 
 | Part | Status | Proof |
 |---|---|---|
-| League, factory and league-coin contracts | written and tested, **not deployed yet** | `contracts/src/` · `forge test` |
+| LeagueFactory (25 stocks) and LeagueCoins | **live on Base mainnet**, source verified (Sourcify exact match). No league created yet | [factory deploy tx](https://basescan.org/tx/0xa60e7451335d386f5b2fa089c7af5a873fb7dcd9d4f24835794a200cf9532674) · [LeagueCoins deploy tx](https://basescan.org/tx/0xa6fdf361ac0b51bcc95731629159b87f1ee78f450ef5af652074ec71779d21cb) |
 | Buying stocks, reading TWAPs, moving shares, launching and harvesting a league coin on Stonks Exchange | run against **real Base mainnet state and the real Stonks Exchange contracts** in a simulation (no money moved) | `tools/live-dry-run.mjs`, `evidence/` |
 | Test mocks | **simulated**: `contracts/test/mocks/` replace the stock tokens, pools and Stonks Exchange in unit tests, because Coinbase's B20 tokens are precompiles that a local fork can't run | the dry run covers the real contracts instead |
 | `SimWhale` | **dry-run only**, never deployed: an outside trader that moves one price and trades the league coin inside the simulation | `contracts/script/SimWhale.sol` |
@@ -83,7 +84,7 @@
 
 ## Not built yet
 
-- Mainnet deployment and verified source.
+- The first real league on mainnet (the contracts are live; no league has been played yet).
 - The web app: league lobby, live draft room, matchup screen, share cards.
 - Keeper that settles weeks and autopicks.
 - Trades between managers, Weekend Cup, an AI rival manager, yield on held stocks (Aave V4).
