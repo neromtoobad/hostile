@@ -11,6 +11,7 @@ import { money, shares, short, tickPct, usd, weekLengthLabel } from "../lib/form
 import { TxButton } from "../components/Tx";
 import { Countdown, StockIcon, StockTag } from "../components/Stock";
 import { Mascot, moodFor, seatFace, teamFace } from "../components/Mascot";
+import { at } from "../components/Reveal";
 
 function useNow() {
   const [now, setNow] = useState(Math.floor(Date.now() / 1000));
@@ -112,7 +113,7 @@ function Lobby({ L, me, mySeat, refresh }: { L: LeagueState; me?: Address; mySea
         {seats.map((s) => {
           const m = L.managers[s];
           return (
-            <div key={s} className={`seat ${m ? "taken" : ""} ${m && sameAddr(m.wallet, me) ? "mine" : ""}`}>
+            <div key={s} className={`seat ${m ? "taken" : ""} ${m && sameAddr(m.wallet, me) ? "mine" : ""}`} style={at(s)}>
               <div className="seat-stage"><Mascot symbol={seatFace(s)} height={140} className={m ? "" : "ghost"} /></div>
               {m ? (<><b>{m.team}</b><span className="muted">{short(m.wallet)}{sameAddr(m.wallet, L.commissioner) ? " · commissioner" : ""}</span></>) : <><b className="muted">Open seat</b><span className="muted">{usd(L.config.entryFee)} to take it</span></>}
             </div>
@@ -201,7 +202,7 @@ function DraftRoom({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: numbe
           const taken = s.owner !== undefined;
           const min = s.price ? BigInt(Math.floor(((Number(L.perPickUsdc) / 1e6 / s.price) * 1e8) * 0.97)) : 0n;
           return (
-            <div key={s.id} className={`card ${taken ? "taken" : ""}`}>
+            <div key={s.id} className={`card ${taken ? "taken" : ""}`} style={at(s.id)}>
               <div className="card-stage">
                 <Mascot symbol={s.meta.symbol} height={104} />
               </div>
