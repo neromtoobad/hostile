@@ -3,6 +3,7 @@ import { useAccount, useSwitchChain, useWaitForTransactionReceipt, useWriteContr
 import { base } from "wagmi/chains";
 import type { Abi, TransactionReceipt } from "viem";
 import { basescan } from "../lib/chain";
+import { BUILDER_SUFFIX } from "../lib/builder";
 
 export type TxRequest = {
   address: `0x${string}`;
@@ -45,7 +46,7 @@ export function TxButton({
     if (!req) return;
     try {
       if (chainId !== base.id) await switchChainAsync({ chainId: base.id });
-      await writeContractAsync({ ...req, chainId: base.id } as Parameters<typeof writeContractAsync>[0]);
+      await writeContractAsync({ ...req, chainId: base.id, dataSuffix: BUILDER_SUFFIX } as Parameters<typeof writeContractAsync>[0]);
     } catch (e) {
       setError(plainError(e));
     }
