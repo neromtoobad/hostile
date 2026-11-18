@@ -40,8 +40,8 @@ No league has been played on mainnet yet (see [Not built yet](#not-built-yet)).
 | A commissioner launches the league coin on Stonks Exchange, priced in the treasury stock, with `LeagueCoins` as fee owner | `contracts/src/LeagueCoins.sol:54`, `:79` | test `test_commissioner_launches_coin_priced_in_treasury_stock`, dry run "League coin" |
 | Coin fees: the stock side goes into the league treasury, the coin side is burned | `contracts/src/LeagueCoins.sol:89`, `:104`, `:111` → `contracts/src/League.sol:299` | test `test_harvest_adds_stock_fees_to_treasury_and_burns_coin_fees`, dry run treasury 0.0125 → 0.1000 NVDA |
 | After the season, coin fees go straight to the champion | `contracts/src/LeagueCoins.sol:114` | test `test_champion_takes_the_whole_treasury_and_later_fees_go_straight_to_them` |
-| The app reads every league, price and score from Base; nothing is stored off-chain | `web/src/lib/league.ts:98` `loadLeague` | open any page; the RPC calls are in the network tab |
-| Live scores in the app use the same 30-minute pool TWAP as the contract, labelled as estimates until settled | `web/src/lib/league.ts:179`, `web/src/pages/League.tsx:274` | compare with `weekScore` after `settleWeek` |
+| The app reads every league, price and score from Base; nothing is stored off-chain | `web/src/lib/league.ts:99` `loadLeague` | open any page; the RPC calls are in the network tab |
+| Live scores in the app use the same 30-minute pool TWAP as the contract, labelled as estimates until settled | `web/src/lib/league.ts:180`, `web/src/pages/League.tsx:281` | compare with `weekScore` after `settleWeek` |
 | Each button sends one real transaction and links it on BaseScan | `web/src/components/Tx.tsx:17`, `:61` | any join, pick or settle |
 | US visitors get a notice instead of the app | `web/middleware.js:5` | open the site from a US IP: HTTP 451 |
 
@@ -113,7 +113,7 @@ Fantasy stock games run on paper points, so losing costs nothing and winning pay
 | Sponsor | Core primitive we use | Where | Why it needs this |
 |---|---|---|---|
 | **Base / Coinbase tokenized stocks (B20)** | The stock tokens themselves: the league holds them, slices move them, the champion receives them | `contracts/src/lib/TokenTransfer.sol:9` (B20-safe transfer), `League.sol:387`, `:405`, `:430` | The prize *is* the shares. B20 tokens are precompiles with a transfer blocklist, so transfers check the return value and blocked wallets get an IOU (`claim`, `League.sol:438`) |
-| **Aerodrome Slipstream** | Swaps for every pick and the rake; `observe()` TWAP for scoring and for the anti-manipulation guards | `League.sol:263`–`:290`, `lib/PoolPrice.sol:24`, `web/src/lib/league.ts:179` | It's where the liquid stock/USDC pools are (28 pools over $100K, `contracts/script/stocks.base.json`), and its onchain price history means nobody, including us, sets the score |
+| **Aerodrome Slipstream** | Swaps for every pick and the rake; `observe()` TWAP for scoring and for the anti-manipulation guards | `League.sol:263`–`:290`, `lib/PoolPrice.sol:24`, `web/src/lib/league.ts:180` | It's where the liquid stock/USDC pools are (28 pools over $100K, `contracts/script/stocks.base.json`), and its onchain price history means nobody, including us, sets the score |
 | **Stonks Exchange** (partner prize) | Launcher for each league's coin, priced in a stock; locker that pays trading fees to `LeagueCoins` | `contracts/src/LeagueCoins.sol:54`, `:79`, `:89` | Turns a league into a community token whose fees buy the league's prize in real shares |
 
 ## Trust model

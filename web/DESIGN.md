@@ -64,8 +64,18 @@ Built with [Motion](https://motion.dev) for springs and presence, CSS for the re
 | Sections | Children rise in one after another | Reading order |
 | Closing crowd | Mascots hop in a wave | A send-off |
 | League page | Seats and draft cards rise in; a draft card lifts and its mascot grows on hover | The board feels like picking a player |
+| Pitch | Players drop onto the pitch on a spring, one after another; a tapped player lifts and its name plate gets a volt ring | Each pick feels like signing a player |
 
 Reduced-motion users get the finished page with no movement, and the steps only change when clicked. Automated browsers (link previews, screenshot tools) also get the finished page (`STILL` in `web/src/components/Motion.tsx`).
+
+## The pitch (league page)
+
+Fantasy-football style: stocks stand on a pitch as players (`web/src/components/Pitch.tsx`).
+
+- **Matchup:** one pitch per match. Your rival is in the top half and you are in the bottom half, with the team bars at each end showing the live score. Each player's plate shows its move this week; the captain wears a volt **C** armband and its plate reads "×2". A bye week shows a half pitch.
+- **Your team:** a half pitch with your squad. Tap a player to see its shares and value and to make it captain (one `setCaptain` transaction). A captain changed mid-season wears an outlined armband until its week starts. The contract keeps that queue private, so the app reads it from the `CaptainSet` events (`withQueuedCaptains` in `lib/league.ts`).
+- **Draft:** your pitch sits beside the board (above it on phones). Empty dashed shirts mark picks still to come, each labelled with its pick number.
+- **Formation:** at most four players in a row, with fewer in the front row (`formation()`). Players scale with the pitch width through container units.
 
 ## Characters
 
