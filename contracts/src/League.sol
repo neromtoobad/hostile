@@ -93,6 +93,7 @@ contract League {
     event DraftStarted(uint8[] order, uint256 perPickUsdc);
     event Picked(uint256 indexed pick, uint256 indexed seat, uint256 indexed stockId, uint256 usdcIn, uint256 sharesOut, bool auto_);
     event TreasuryBought(uint256 indexed stockId, uint256 usdcIn, uint256 sharesOut);
+    event TreasuryFunded(address indexed from, uint256 amount);
     event SeasonStarted(uint256 start);
     event CaptainSet(uint256 indexed seat, uint256 indexed stockId, uint256 fromWeek);
     event WeekScored(uint256 indexed week, uint256 indexed seat, int256 score);
@@ -242,7 +243,7 @@ contract League {
         uint256 n = _managers.length;
         uint256 rake = config.entryFee * n - perPickUsdc * config.rosterSize * n;
         uint256 bought = _buy(config.treasuryStock, rake);
-        treasuryShares = bought;
+        treasuryShares += bought;
         emit TreasuryBought(config.treasuryStock, rake, bought);
         for (uint256 seat; seat < n; seat++) {
             uint8[] storage r = _roster[seat];
@@ -291,6 +292,16 @@ contract League {
         require(owe <= _swapBudget, "League: pool asked too much");
         _swapBudget = 0;
         usdc.safeTransfer(msg.sender, owe);
+    }
+
+    /// @notice Add treasury stock to the champion's prize. The league coin's trading fees arrive
+    /// here (see LeagueCoins), and anyone else can top up the pot too.
+    function fundTreasury(uint256 amount) external nonReentrant {
+        require(phase != Phase.Finished, "League: season over");
+        require(amount > 0, "League: nothing to add");
+        _stocks[config.treasuryStock].token.safeTransferFrom(msg.sender, address(this), amount);
+        treasuryShares += amount;
+        emit TreasuryFunded(msg.sender, amount);
     }
 
     // ───────────────────────────── Season ─────────────────────────────

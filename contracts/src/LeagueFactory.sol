@@ -14,6 +14,7 @@ contract LeagueFactory {
     address[] internal _tokens; // Coinbase stock tokens, ordered by pool liquidity (autopick takes the first free one)
     address[] internal _pools; // matching Aerodrome Slipstream stock/USDC pools
     address[] internal _leagues;
+    mapping(address => bool) public isLeague;
 
     uint32 public constant MIN_WEEK = 1 hours;
     uint32 public constant MIN_PICK_WINDOW = 1 minutes;
@@ -37,6 +38,7 @@ contract LeagueFactory {
         require(cfg.maxManagers <= MAX_MANAGERS && cfg.seasonWeeks <= MAX_WEEKS, "Factory: too big");
         league = new League(usdc, msg.sender, name, cfg, _tokens, _pools);
         _leagues.push(address(league));
+        isLeague[address(league)] = true;
         emit LeagueCreated(address(league), msg.sender, name, cfg);
     }
 
