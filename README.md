@@ -67,7 +67,7 @@ The [official rules](https://www.base.org/stocksmaxxing/rules) say judges score 
 | LeagueFactory (25 stocks) and LeagueCoins | **live on Base mainnet**, source verified (Sourcify exact match). No league created yet | [factory deploy tx](https://basescan.org/tx/0xa60e7451335d386f5b2fa089c7af5a873fb7dcd9d4f24835794a200cf9532674) · [LeagueCoins deploy tx](https://basescan.org/tx/0xa6fdf361ac0b51bcc95731629159b87f1ee78f450ef5af652074ec71779d21cb) |
 | Web app | **live** at [hostile.nerom.site](https://hostile.nerom.site) (Vercel), reads Base mainnet directly: no backend, no database. Home, lobby, join and draft room checked; the season and final screens have not run with a real league yet | `web/src/lib/league.ts` |
 | Buying stocks, reading TWAPs, moving shares, launching and harvesting a league coin on Stonks Exchange | run against **real Base mainnet state and the real Stonks Exchange contracts** with `eth_simulateV1` (no money moved) | `tools/live-dry-run.mjs`, `evidence/` |
-| Keeper (`tools/keeper.mjs`) | **written and tested, not running yet.** A watch-only pass against Base mainnet works, and on a local fork it spots a league whose pick clock ran out. It has not sent a mainnet transaction: that needs a funded wallet and a real league | `tools/keeper.test.mjs` |
+| Keeper (`tools/keeper.mjs`) | **running, has sent nothing yet.** Hosted on Railway since 19 November 2026, checking the factory once a minute from its own wallet [`0x0c68…1655`](https://basescan.org/address/0x0c686564cbfef521ed290Ce2237C3D3aeE291655). There is no league yet and that wallet holds no ETH yet, so it has not sent a mainnet transaction. On a local fork it spots a league whose pick clock ran out | `tools/keeper.test.mjs` |
 | Builder Code | **wired, off.** No code is registered yet, so today's transactions carry no suffix | `web/src/lib/builder.ts` |
 | Test mocks | **simulated**: `contracts/test/mocks/` replace the stock tokens, pools and Stonks Exchange in unit tests, because Coinbase's B20 tokens are precompiles that a local fork can't run | the dry run covers the real contracts instead |
 | `SimWhale` | **dry-run only**, never deployed: an outside trader that moves one price and trades the league coin inside the simulation | `contracts/script/SimWhale.sol` |
@@ -140,7 +140,7 @@ Fantasy stock games run on paper points, so losing costs nothing and winning pay
 - The first real league on mainnet (the contracts are live; no league has been played yet).
 - The demo video and the X post.
 - Share cards for X.
-- The keeper running as a hosted service. The script exists (`tools/keeper.mjs`) but is not deployed, so today a player has to press "Settle the week" or "Autopick for them".
+- The keeper's first real transaction. It is hosted and watching, but its wallet is not funded and no league exists, so until then a player presses "Settle the week" or "Autopick for them".
 - A registered Builder Code. The app is ready to send it (`VITE_BUILDER_CODE`); none is set.
 - Trades between managers, Weekend Cup, an AI rival manager, yield on held stocks (Aave V4).
 
