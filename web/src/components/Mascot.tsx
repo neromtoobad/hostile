@@ -1,22 +1,11 @@
 /** Every stock you can draft is a player with its own 3D mascot (Higgsfield renders, see
  *  public/mascots/CREDITS.md). The mood always comes from real prices: a mascot hops when its
  *  side is ahead, sulks when it's behind, and wears the crown when its team wins the season. */
-import type { LeagueState, Manager } from "../lib/league";
+import { hasMascot } from "../lib/mascots";
 
 export type Mood = "ready" | "up" | "down" | "champ";
 
-export const MASCOTS = [
-  "AAOI", "AAPL", "AMD", "AMZN", "AVGO", "BE", "BRK.B", "CRCL", "GOOGL", "HIMS", "HOOD", "INTC", "LITE", "LLY",
-  "META", "MRNA", "MRVL", "MSFT", "MSTR", "MU", "NFLX", "NVDA", "ORCL", "PLTR", "SNDK", "SPCX", "TSLA", "TTWO",
-] as const;
-const HAS = new Set<string>(MASCOTS);
-
-/** Faces for seats that haven't drafted yet, so an empty lobby still has a lineup. */
-const SEAT_FACES = ["NVDA", "TSLA", "AAPL", "MSTR", "PLTR", "AMZN", "META", "NFLX", "SPCX", "GOOGL", "HOOD", "MSFT"];
-export const seatFace = (seat: number) => SEAT_FACES[seat % SEAT_FACES.length];
-
-/** A team plays as its captain. Before the draft, it uses its seat's face. */
-export const teamFace = (L: LeagueState, m: Manager) => (m.roster.length ? L.stocks[m.captain]?.meta.symbol : undefined) ?? seatFace(m.seat);
+export { MASCOTS, seatFace, teamFace } from "../lib/mascots";
 
 /** Mood for one side of a matchup, from the live score estimate. */
 export const moodFor = (mine: number, theirs?: number): Mood =>
@@ -26,7 +15,7 @@ export const moodFor = (mine: number, theirs?: number): Mood =>
 export const moodOf = (move?: number): Mood => (move === undefined || move === 0 ? "ready" : move > 0 ? "up" : "down");
 
 export function Mascot({ symbol, mood = "ready", height = 120, className = "" }: { symbol: string; mood?: Mood; height?: number; className?: string }) {
-  if (!HAS.has(symbol)) {
+  if (!hasMascot(symbol)) {
     return (
       <span className={`mascot mascot-missing ${className}`} style={{ width: height, height }}>
         <span style={{ fontSize: height * 0.3 }}>{symbol.slice(0, 4)}</span>

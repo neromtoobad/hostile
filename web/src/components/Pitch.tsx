@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { Mascot, type Mood } from "./Mascot";
 import { STILL } from "./Motion";
+import { formation } from "../lib/mascots";
 
 export type Slot = {
   key: string | number;
@@ -22,14 +23,7 @@ export type Slot = {
   title?: string;
 };
 
-/** Rows of players for a squad of n, at most four across. Fewer up front, like a real line-up. */
-export function formation(n: number): number[] {
-  if (n <= 4) return [n];
-  const rows = Math.ceil(n / 4);
-  const base = Math.floor(n / rows);
-  const extra = n % rows;
-  return [...Array(rows).keys()].map((r) => base + (r >= rows - extra ? 1 : 0));
-}
+export { formation };
 
 /** One team's players in rows. `facing="down"` puts the front row at the bottom (the top half). */
 export function Lineup({ slots, facing = "up" }: { slots: Slot[]; facing?: "up" | "down" }) {
