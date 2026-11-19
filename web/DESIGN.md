@@ -75,7 +75,24 @@ Fantasy-football style: stocks stand on a pitch as players (`web/src/components/
 - **Matchup:** one pitch per match. Your rival is in the top half and you are in the bottom half, with the team bars at each end showing the live score. Each player's plate shows its move this week; the captain wears a volt **C** armband and its plate reads "×2". A bye week shows a half pitch.
 - **Your team:** a half pitch with your squad. Tap a player to see its shares and value and to make it captain (one `setCaptain` transaction). A captain changed mid-season wears an outlined armband until its week starts. The contract keeps that queue private, so the app reads it from the `CaptainSet` events (`withQueuedCaptains` in `lib/league.ts`).
 - **Draft:** your pitch sits beside the board (above it on phones). Empty dashed shirts mark picks still to come, each labelled with its pick number.
-- **Formation:** at most four players in a row, with fewer in the front row (`formation()`). Players scale with the pitch width through container units.
+- **Formation:** at most four players in a row, with fewer in the front row (`formation()` in `web/src/lib/mascots.ts`). Players scale with the pitch width through container units.
+
+## Share cards (what X shows for a link)
+
+A league link posted on X unfurls into a 1200×630 picture in the site's own look: white card, words on the left, the cobalt pitch on the right. `web/api/og.ts` reads the league from Base and `web/src/share/cards.ts` lays it out; the app's **Share on X** buttons (`web/src/components/Share.tsx`) show the same picture before posting.
+
+| Card | When | What it shows |
+|---|---|---|
+| Site | any non-league link | The headline and five mascots. No numbers |
+| League | `/l/<address>` | Follows the stage: open seats in the lobby, picks so far in the draft, the standings in the season, the crowned champion at the end |
+| Squad | `?card=team&seat=N` | One manager's stocks in formation, the captain's armband, what the bag is worth now |
+| Match | `?card=match&seat=N` (`&week=W` for a settled week) | Two squads either side of the halfway line with their scores. "Live" until the week is settled, then "Final" with who hands 10% to whom |
+
+- Every number on a card is read from the league's contract when the picture is drawn. The link only carries an address, a seat number and a week number.
+- Player-typed names (league, team) are cut to fit and never wrap.
+- Link-preview bots get a few lines of tags from `web/middleware.js`; they never get the app.
+- Fonts: Funnel Display and Funnel Sans (SIL Open Font License), static WOFF files in `web/src/share/fonts/`, packed into the function by `web/scripts/og-fonts.mjs`. Mascots for cards are 240px PNG copies in `web/public/og/mascots/` (the card renderer cannot read WebP).
+- Local check: the dev server serves `/api/og` from the same file (`web/scripts/og-dev.ts`).
 
 ## Characters
 

@@ -16,6 +16,7 @@ No league has been played on mainnet yet (see [Not built yet](#not-built-yet)).
 | Do this | You see |
 |---|---|
 | Open [hostile.nerom.site](https://hostile.nerom.site) (no wallet needed) | The 25 draftable stocks with prices read live from their Aerodrome pools; each stock's mascot hops or sulks with its real 30-minute move |
+| Open [hostile.nerom.site/api/og](https://hostile.nerom.site/api/og) | The share card X shows for a Hostile link, drawn by the live function (league links get their own card with that league's on-chain numbers) |
 | `cd contracts && forge test` | 25 passing tests: draft buys, TWAP guards, slices, captain lock, byes, blocked wallets, league coin fees |
 | `cd contracts && forge build && cd .. && node tools/live-dry-run.mjs` | A full season on today's Base mainnet state: real buys, real price reads, a real Stonks Exchange coin launch and fee harvest, real B20 transfers, saved to `evidence/` |
 | Open [evidence/dry-run-58992480.json](evidence/dry-run-58992480.json) | Picks with the price paid per share, the league coin and its harvest, week results, slices, the champion, and the final wallets (raw and dividend-adjusted balances) |
@@ -40,12 +41,14 @@ No league has been played on mainnet yet (see [Not built yet](#not-built-yet)).
 | A commissioner launches the league coin on Stonks Exchange, priced in the treasury stock, with `LeagueCoins` as fee owner | `contracts/src/LeagueCoins.sol:54`, `:79` | test `test_commissioner_launches_coin_priced_in_treasury_stock`, dry run "League coin" |
 | Coin fees: the stock side goes into the league treasury, the coin side is burned | `contracts/src/LeagueCoins.sol:89`, `:104`, `:111` → `contracts/src/League.sol:299` | test `test_harvest_adds_stock_fees_to_treasury_and_burns_coin_fees`, dry run treasury 0.0125 → 0.1000 NVDA |
 | After the season, coin fees go straight to the champion | `contracts/src/LeagueCoins.sol:114` | test `test_champion_takes_the_whole_treasury_and_later_fees_go_straight_to_them` |
-| The app reads every league, price and score from Base; nothing is stored off-chain | `web/src/lib/league.ts:99` `loadLeague` | open any page; the RPC calls are in the network tab |
-| Live scores in the app use the same 30-minute pool TWAP as the contract, labelled as estimates until settled | `web/src/lib/league.ts:180`, `web/src/pages/League.tsx:281` | compare with `weekScore` after `settleWeek` |
+| The app reads every league, price and score from Base; nothing is stored off-chain | `web/src/lib/leagueRead.ts:103` `readLeague` | open any page; the RPC calls are in the network tab |
+| Live scores in the app use the same 30-minute pool TWAP as the contract, labelled as estimates until settled | `web/src/lib/leagueRead.ts:184`, `web/src/pages/League.tsx:305` | compare with `weekScore` after `settleWeek` |
 | Each button sends one real transaction and links it on BaseScan | `web/src/components/Tx.tsx:18`, `:62` | any join, pick or settle |
 | A keeper script finds leagues with an expired pick clock or an ended week and calls `autopick` / `settleWeek` for them, after asking the node whether the call would succeed | `tools/keeper.mjs:62` `dueAction`, `:81` `act` | `cd tools && npm test`; `node tools/keeper.mjs --once` (watch-only without a key) |
 | App transactions carry a Base Builder Code as an ERC-8021 data suffix when `VITE_BUILDER_CODE` is set | `web/src/lib/builder.ts:7`, `web/src/components/Tx.tsx:49` | the suffix for Base's documented example code matches byte for byte |
-| US visitors get a notice instead of the app | `web/middleware.js:5` | open the site from a US IP: HTTP 451 |
+| A league link posted on X shows a picture of that league (or one squad, or one match), drawn from the league's contract when X asks for it. Only leagues made by the factory get one | `web/api/og.ts:32` `pick`, `:37` (factory check), `web/src/share/cards.ts:198`, `:303`, `:342` | `curl -sI "https://hostile.nerom.site/api/og"` returns a PNG; a league card needs a league (see "What's real") |
+| Link-preview bots get tags that point at that picture, and never the app | `web/middleware.js:17`, `:52` | `curl -s -A Twitterbot https://hostile.nerom.site/` |
+| US visitors get a notice instead of the app | `web/middleware.js:56` | open the site from a US IP: HTTP 451 |
 
 ## Judging criteria
 
@@ -68,6 +71,7 @@ The [official rules](https://www.base.org/stocksmaxxing/rules) say judges score 
 | Web app | **live** at [hostile.nerom.site](https://hostile.nerom.site) (Vercel), reads Base mainnet directly: no backend, no database. Home, lobby, join and draft room checked; the season and final screens have not run with a real league yet | `web/src/lib/league.ts` |
 | Buying stocks, reading TWAPs, moving shares, launching and harvesting a league coin on Stonks Exchange | run against **real Base mainnet state and the real Stonks Exchange contracts** with `eth_simulateV1` (no money moved) | `tools/live-dry-run.mjs`, `evidence/` |
 | Keeper (`tools/keeper.mjs`) | **running, has sent nothing yet.** Hosted on Railway since 19 November 2026, checking the factory once a minute from its own wallet [`0x0c68…1655`](https://basescan.org/address/0x0c686564cbfef521ed290Ce2237C3D3aeE291655). There is no league yet and that wallet holds no ETH yet, so it has not sent a mainnet transaction. On a local fork it spots a league whose pick clock ran out | `tools/keeper.test.mjs` |
+| Share cards (`/api/og`) | **live; league cards not yet drawn on mainnet**, because no league exists there. The site card is served by the live function. On a local fork of Base, the same function drew the lobby card of a real league made through the factory. The draft, season, squad and match layouts were checked only with made-up squads fed straight to the card code (that test data is not in the repo), since a fork cannot run picks | `web/api/og.ts`, `web/src/share/cards.ts` |
 | Builder Code | **wired, off.** No code is registered yet, so today's transactions carry no suffix | `web/src/lib/builder.ts` |
 | Test mocks | **simulated**: `contracts/test/mocks/` replace the stock tokens, pools and Stonks Exchange in unit tests, because Coinbase's B20 tokens are precompiles that a local fork can't run | the dry run covers the real contracts instead |
 | `SimWhale` | **dry-run only**, never deployed: an outside trader that moves one price and trades the league coin inside the simulation | `contracts/script/SimWhale.sol` |
@@ -117,7 +121,7 @@ Fantasy stock games run on paper points, so losing costs nothing and winning pay
 | Sponsor | Core primitive we use | Where | Why it needs this |
 |---|---|---|---|
 | **Base / Coinbase tokenized stocks (B20)** | The stock tokens themselves: the league holds them, slices move them, the champion receives them | `contracts/src/lib/TokenTransfer.sol:9` (B20-safe transfer), `League.sol:387`, `:405`, `:430` | The prize *is* the shares. B20 tokens are precompiles with a transfer blocklist, so transfers check the return value and blocked wallets get an IOU (`claim`, `League.sol:438`) |
-| **Aerodrome Slipstream** | Swaps for every pick and the rake; `observe()` TWAP for scoring and for the anti-manipulation guards | `League.sol:263`–`:290`, `lib/PoolPrice.sol:24`, `web/src/lib/league.ts:180` | It's where the liquid stock/USDC pools are (28 pools over $100K, `contracts/script/stocks.base.json`), and its onchain price history means nobody, including us, sets the score |
+| **Aerodrome Slipstream** | Swaps for every pick and the rake; `observe()` TWAP for scoring and for the anti-manipulation guards | `League.sol:263`–`:290`, `lib/PoolPrice.sol:24`, `web/src/lib/leagueRead.ts:184` | It's where the liquid stock/USDC pools are (28 pools over $100K, `contracts/script/stocks.base.json`), and its onchain price history means nobody, including us, sets the score |
 | **Stonks Exchange** (partner prize) | Launcher for each league's coin, priced in a stock; locker that pays trading fees to `LeagueCoins` | `contracts/src/LeagueCoins.sol:54`, `:79`, `:89` | Turns a league into a community token whose fees buy the league's prize in real shares |
 
 ## Trust model
@@ -139,7 +143,6 @@ Fantasy stock games run on paper points, so losing costs nothing and winning pay
 
 - The first real league on mainnet (the contracts are live; no league has been played yet).
 - The demo video and the X post.
-- Share cards for X.
 - The keeper's first real transaction. It is hosted and watching, but its wallet is not funded and no league exists, so until then a player presses "Settle the week" or "Autopick for them".
 - A registered Builder Code. The app is ready to send it (`VITE_BUILDER_CODE`); none is set.
 - Trades between managers, Weekend Cup, an AI rival manager, yield on held stocks (Aave V4).
