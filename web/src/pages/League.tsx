@@ -13,6 +13,7 @@ import { Countdown, StockIcon } from "../components/Stock";
 import { Mascot, moodOf, seatFace, teamFace } from "../components/Mascot";
 import { Lines, Lineup, type Slot } from "../components/Pitch";
 import { at } from "../components/Reveal";
+import { ShareButton } from "../components/Share";
 
 function useNow() {
   const [now, setNow] = useState(Math.floor(Date.now() / 1000));
@@ -59,6 +60,18 @@ export function LeaguePage() {
   );
 }
 
+/** Changes whenever the league's state does, so a new post gets a fresh card. */
+const stamp = (L: LeagueState) => `${L.phase}.${L.managers.length}.${L.pickNumber}.${L.weeksSettled}`;
+
+/** The words that go with a league link, by stage. */
+function leagueShareText(L: LeagueState) {
+  const champ = L.champion ? L.managers[L.champion.seat] : undefined;
+  if (L.phase === 0) return `Join my league "${L.name}" on Hostile. We draft real stocks, and each week the loser hands 10% of their shares to the winner.`;
+  if (L.phase === 1) return `The draft is on in "${L.name}" on Hostile. Every pick buys a real share.`;
+  if (L.phase === 3 && champ) return `${champ.team} won "${L.name}" on Hostile.`;
+  return `Week ${Math.min(L.weeksSettled + 1, L.config.seasonWeeks)} of "${L.name}" on Hostile. Each week the loser hands 10% of their shares to the winner.`;
+}
+
 function LeagueHeader({ L }: { L: LeagueState }) {
   const t = L.stocks[L.config.treasuryStock];
   return (
@@ -71,6 +84,9 @@ function LeagueHeader({ L }: { L: LeagueState }) {
           {L.config.seasonWeeks} × {weekLengthLabel(L.config.weekLength)} weeks ·{" "}
           <a href={basescan("address", L.address)} target="_blank" rel="noreferrer">contract ↗</a>
         </p>
+        <div className="head-actions">
+          <ShareButton label={L.phase === 0 ? "Invite on X" : "Share on X"} target={{ league: L.address, v: stamp(L), text: leagueShareText(L) }} />
+        </div>
       </div>
       <div className="prize">
         <span className="prize-label">Champion's prize</span>
@@ -270,7 +286,15 @@ function Season({ L, mySeat, now, refresh }: { L: LeagueState; mySeat?: number; 
     <section className="block">
       <div className="block-head">
         <h2 className="display-sm">Week {week + 1} of {L.config.seasonWeeks}</h2>
+        <div className="head-actions head-actions-end">
         <span className="muted">{over ? "Week is over" : <>ends in <Countdown to={weekEnd} now={now} /></>}</span>
+        {mySeat !== undefined && week > 0 && (
+          <ShareButton
+            label="Share last week's result"
+            target={{ league: L.address, card: "match", seat: mySeat, week: week - 1, v: stamp(L), text: `Week ${week} result in "${L.name}" on Hostile. The loser handed 10% of their shares to the winner.` }}
+          />
+        )}
+        </div>
       </div>
       {over && (
         <div className="settle">
@@ -335,6 +359,14 @@ function Matchup({ L, a, b, mySeat }: { L: LeagueState; a: Manager; b?: Manager;
         </div>
       )}
       {bar(bottom, top, "bottom")}
+      {top && (
+        <div className="mpitch-foot">
+          <ShareButton
+            label="Share this match" className="btn-text"
+            target={{ league: L.address, card: "match", seat: bottom.seat, v: stamp(L), text: `${bottom.team} vs ${top.team}, week ${L.weeksSettled + 1} of "${L.name}" on Hostile. The loser hands 10% of their shares to the winner.` }}
+          />
+        </div>
+      )}
     </article>
   );
 }
@@ -396,6 +428,12 @@ function MyTeam({ L, seat, refresh }: { L: LeagueState; seat: number; refresh: (
         <div><span className="muted">Your team</span><b>{m.team}</b></div>
         <div className="mt-bag"><span className="muted">Bag now</span><b>{money(bagValue(L, m))}</b></div>
       </div>
+      {m.roster.length > 0 && (
+        <ShareButton
+          label="Share my team" className="btn-text"
+          target={{ league: L.address, card: "team", seat, v: `${stamp(L)}.${m.roster.length}.${m.captain}`, text: `My squad in "${L.name}" on Hostile: ${m.roster.map((id) => L.stocks[id].meta.symbol).join(", ")}. Every one is a real share.` }}
+        />
+      )}
       <div className="pitch-box half">
         <Lines variant="half" />
         <Lineup slots={slots} facing="up" />

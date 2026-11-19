@@ -687,3 +687,23 @@ a.stack-card:hover { translate: 0 -4px; }
   .champ-fig { left: 50%; top: 10px; bottom: auto; transform: translateX(-50%); }
   .clock-right { width: 100%; justify-content: space-between; }
 }
+
+/* ───────────── share on X ───────────── */
+.head-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.head-actions-end { align-items: center; gap: 16px; }
+.my-team > .btn-text { justify-self: end; margin-right: 6px; }
+.mpitch-foot { display: flex; justify-content: flex-end; padding: 0 14px 14px; }
+.btn-text { background: none; border: 0; padding: 0; height: auto; color: var(--slate); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.btn-text:hover { color: var(--ink); }
+.share-veil { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(11, 15, 26, 0.5); animation: share-in 0.18s ease both; }
+.share-sheet { display: grid; gap: 14px; width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px; border-radius: 28px; background: var(--card); box-shadow: 0 30px 80px -30px rgba(11, 15, 26, 0.6); }
+.share-top { display: flex; justify-content: space-between; align-items: center; }
+.share-top b { font: 500 22px/1 var(--display); letter-spacing: -0.03em; }
+.share-card { position: relative; display: grid; place-items: center; aspect-ratio: 1200 / 630; border-radius: 16px; background: var(--soft); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; text-align: center; }
+.share-card img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.25s ease; }
+.share-card.ready img { opacity: 1; }
+.share-card .muted { padding: 0 24px; font-size: 13.5px; }
+.share-text { font-size: 15px; line-height: 1.45; }
+.share-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.share-actions .btn { flex: 1 1 160px; justify-content: center; text-decoration: none; }
+@keyframes share-in { from { opacity: 0; } to { opacity: 1; } }
